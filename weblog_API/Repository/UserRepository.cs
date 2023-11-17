@@ -1,3 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
@@ -22,6 +26,23 @@ public class UserRepository:IUserRepository
         return user == null;
     }
 
+    private string tokenCreation(User user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(secretKey);
+        var tokenDescriptor = new SecurityTokenDescriptor()
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.Email, user.Email)
+            }),
+            Expires = DateTime.UtcNow.AddHours(2),
+            SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+    
     public async Task<TokenResponseDto> Registration(UserRegister registrationRequest)
     {
         User user = new()
@@ -37,7 +58,7 @@ public class UserRepository:IUserRepository
         };
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
-        return new TokenResponseDto(){Token = ""};
+        return new TokenResponseDto(){Token = tokenCreation(user)};
     }
 
     public TokenResponseDto Login(LoginCredentials loginRequest)
@@ -52,7 +73,7 @@ public class UserRepository:IUserRepository
         }
         return new TokenResponseDto()
         {
-            Token = ""
+            Token = tokenCreation(user)
         };
     }
 }

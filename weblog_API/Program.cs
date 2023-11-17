@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using weblog_API.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -8,6 +11,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+builder.Services.AddDbContext<AppDbContext>(options => 
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 if (app.Environment.IsDevelopment())
 {
