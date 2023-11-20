@@ -9,7 +9,7 @@ public class UserEdit
     public string Email { get; set; }
     [Required] 
     public string FullName { get; set; }
-    public DateOnly BirthDate { get; set; } //почему в swagger используется DateTime
+    public DateOnly BirthDate { get; set; }
     [Required]
     public Gender Gender { get; set; }
     public string PhoneNumber { get; set; }

@@ -12,7 +12,7 @@ namespace weblog_API.Repository;
 public class UserRepository:IUserRepository
 {
     private readonly AppDbContext _db;
-    public string secretKey;
+    private string secretKey;
 
     public UserRepository(AppDbContext db, IConfiguration configuration)
     {
