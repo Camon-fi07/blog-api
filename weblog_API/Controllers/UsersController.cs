@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using weblog_API.Data.Dto;
 using weblog_API.Models.User;
 using weblog_API.Repository.IRepository;
 
@@ -22,4 +23,13 @@ public class UsersController : Controller
         var token = await _userRepository.Registration(userRegister);
         return Ok(token);
     }
+
+    [HttpPost("login")]
+    public IActionResult Login([FromBody] LoginCredentials loginCredentials)
+    {
+        var token = _userRepository.Login(loginCredentials);
+        if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
+        return Ok(token);
+    }
+    
 }
