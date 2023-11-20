@@ -53,7 +53,7 @@ public class UserRepository:IUserRepository
             BirthDate = registrationRequest.BirthDate,
             FullName = registrationRequest.FullName,
             PhoneNumber = registrationRequest.PhoneNumber,
-            CreateTime = DateTime.Now,
+            CreateTime = DateTime.UtcNow,
             Id = Guid.NewGuid()
         };
         _db.Users.Add(user);
