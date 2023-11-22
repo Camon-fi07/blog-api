@@ -16,7 +16,7 @@ public class UsersController : Controller
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserRegister userRegister)
+    public async Task<ActionResult<TokenResponseDto>> Register([FromBody] UserRegister userRegister)
     {
         bool isUserUnique = _userRepository.isUniqueUser(userRegister.Email);
         if (!isUserUnique) return BadRequest(new { message = "There is already a user with this email " });
@@ -25,7 +25,7 @@ public class UsersController : Controller
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginCredentials loginCredentials)
+    public ActionResult<TokenResponseDto> Login([FromBody] LoginCredentials loginCredentials)
     {
         var token = _userRepository.Login(loginCredentials);
         if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
@@ -33,7 +33,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("profile")]
-    public IActionResult Profile()
+    public ActionResult<UserDto> Profile()
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return BadRequest();
