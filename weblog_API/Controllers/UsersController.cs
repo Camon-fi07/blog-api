@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
@@ -33,11 +34,12 @@ public class UsersController : Controller
     }
 
     [HttpGet("profile")]
+    [Authorize]
     public ActionResult<UserDto> Profile()
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return BadRequest();
-        var user = _userRepository.GetUser(token);
+        var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
         if (user == null) return BadRequest();
         return Ok(user);
     }

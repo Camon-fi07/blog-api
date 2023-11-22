@@ -30,7 +30,7 @@ public class UserRepository:IUserRepository
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(secretKey);
-        var tokenDescriptor = new SecurityTokenDescriptor()
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
@@ -89,6 +89,7 @@ public class UserRepository:IUserRepository
     public UserDto? GetUser(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
+        
         if (!tokenHandler.CanReadToken(token)) return null;
         
         var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
