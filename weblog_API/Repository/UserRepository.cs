@@ -76,4 +76,26 @@ public class UserRepository:IUserRepository
             Token = tokenCreation(user)
         };
     }
+
+    public UserDto? GetUser(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        if (!tokenHandler.CanReadToken(token)) return null;
+        
+        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+        
+        var userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == "email").Value;
+        if (userEmail == null) return null;
+        
+        var user = _db.Users.FirstOrDefault(u => u.Email == userEmail);
+        return new UserDto()
+        {
+            Email = user.Email,
+            Gender = user.Gender,
+            FullName = user.FullName,
+            Id = user.Id,
+            createTime = user.CreateTime,
+            Phone = user.PhoneNumber
+        };
+    }
 }

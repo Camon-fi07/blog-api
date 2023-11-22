@@ -31,5 +31,14 @@ public class UsersController : Controller
         if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
         return Ok(token);
     }
-    
+
+    [HttpGet("profile")]
+    public IActionResult Profile()
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        if (token == null) return BadRequest();
+        var user = _userRepository.GetUser(token);
+        if (user == null) return BadRequest();
+        return Ok(user);
+    }
 }
