@@ -10,6 +10,8 @@ public interface IUserRepository
     TokenResponseDto Login(LoginCredentials loginRequest); 
     
     Task<TokenResponseDto> Registration(UserRegister registrationRequest);
+    
+    bool Edit(UserEdit userEdit, string token);
 
     UserDto? GetUser(string token);
 

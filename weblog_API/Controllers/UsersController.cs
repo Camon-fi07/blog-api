@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
@@ -42,5 +43,16 @@ public class UsersController : Controller
         var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
         if (user == null) return BadRequest();
         return Ok(user);
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public IActionResult EditProfile([FromBody] UserEdit userEdit)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        if (token == null) return BadRequest();
+        var result = _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
+        if (result) return Ok();
+        return BadRequest();
     }
 }
