@@ -13,11 +13,14 @@ public class UserRepository:IUserRepository
 {
     private readonly AppDbContext _db;
     private string secretKey;
-
+    private string issuer;
+    private string audience;
     public UserRepository(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
         secretKey = configuration.GetValue<string>("ApiSettings:Secrets");
+        issuer= configuration.GetValue<string>("ApiSettings:Issuer");
+        audience = configuration.GetValue<string>("ApiSettings:Audience");
     }
 
     public bool isUniqueUser(string email)
@@ -37,7 +40,9 @@ public class UserRepository:IUserRepository
                 new Claim(ClaimTypes.Email, user.Email)
             }),
             Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = issuer,
+            Audience = audience
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
@@ -49,7 +54,6 @@ public class UserRepository:IUserRepository
         {
             Email = registrationRequest.Email,
             Gender = registrationRequest.Gender,
-            // Password = registrationRequest.Password,
             Password = BCrypt.Net.BCrypt.HashPassword(registrationRequest.Password),
             BirthDate = registrationRequest.BirthDate,
             FullName = registrationRequest.FullName,
