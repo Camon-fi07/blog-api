@@ -5,12 +5,9 @@ namespace weblog_API.Models.User;
 
 public class UserEdit
 {
-    [Required]
     public string Email { get; set; }
-    [Required] 
     public string FullName { get; set; }
     public DateOnly BirthDate { get; set; }
-    [Required]
     public Gender Gender { get; set; }
     public string PhoneNumber { get; set; }
     

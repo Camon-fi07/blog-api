@@ -39,9 +39,9 @@ public class UsersController : Controller
     public ActionResult<UserDto> Profile()
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        if (token == null) return BadRequest();
+        if (token == null) return Unauthorized(new {message = "Invalid token"});
         var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
-        if (user == null) return BadRequest();
+        if (user == null) return BadRequest(new {message = "can't find user"});
         return Ok(user);
     }
 
@@ -50,9 +50,9 @@ public class UsersController : Controller
     public IActionResult EditProfile([FromBody] UserEdit userEdit)
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        if (token == null) return BadRequest();
+        if (token == null) return Unauthorized(new {message = "Invalid token"});
         var result = _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
         if (result) return Ok();
-        return BadRequest();
+        return BadRequest(new {message = "can't edit user with this token"});
     }
 }
