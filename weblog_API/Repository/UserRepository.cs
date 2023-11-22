@@ -49,7 +49,8 @@ public class UserRepository:IUserRepository
         {
             Email = registrationRequest.Email,
             Gender = registrationRequest.Gender,
-            Password = registrationRequest.Password,
+            // Password = registrationRequest.Password,
+            Password = BCrypt.Net.BCrypt.HashPassword(registrationRequest.Password),
             BirthDate = registrationRequest.BirthDate,
             FullName = registrationRequest.FullName,
             PhoneNumber = registrationRequest.PhoneNumber,
@@ -63,7 +64,7 @@ public class UserRepository:IUserRepository
 
     public TokenResponseDto Login(LoginCredentials loginRequest)
     {
-        var user = _db.Users.FirstOrDefault(u => u.Email == loginRequest.Email && u.Password == loginRequest.Password);
+        var user = _db.Users.FirstOrDefault(u => u.Email == loginRequest.Email);
         if (user == null)
         {
             return new TokenResponseDto()
@@ -71,9 +72,17 @@ public class UserRepository:IUserRepository
                 Token = ""
             };
         }
-        return new TokenResponseDto()
+
+        if (BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
-            Token = tokenCreation(user)
+            return new TokenResponseDto()
+            {
+                Token = tokenCreation(user)
+            };
+        }
+        else return new TokenResponseDto()
+        {
+            Token = ""
         };
     }
 
