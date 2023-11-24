@@ -40,14 +40,14 @@ public class UserRepository:IUserRepository
                 new Claim(ClaimTypes.Email, user.Email)
             }),
             Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = issuer,
             Audience = audience
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
+    
     private User? getUserByToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
