@@ -40,12 +40,28 @@ public class UserRepository:IUserRepository
                 new Claim(ClaimTypes.Email, user.Email)
             }),
             Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = issuer,
             Audience = audience
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+    
+    private User? getUserByToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        
+        if (!tokenHandler.CanReadToken(token)) return null;
+        
+        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+        
+        var userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == "email").Value;
+        if (userEmail == null) return null;
+        
+        var user = _db.Users.FirstOrDefault(u => u.Email == userEmail);
+
+        return user;
     }
     
     public async Task<TokenResponseDto> Registration(UserRegister registrationRequest)
@@ -92,16 +108,8 @@ public class UserRepository:IUserRepository
 
     public UserDto? GetUser(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        
-        if (!tokenHandler.CanReadToken(token)) return null;
-        
-        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-        
-        var userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == "email").Value;
-        if (userEmail == null) return null;
-        
-        var user = _db.Users.FirstOrDefault(u => u.Email == userEmail);
+        var user = getUserByToken(token);
+        if (user == null) return null;
         return new UserDto()
         {
             Email = user.Email,
@@ -111,5 +119,18 @@ public class UserRepository:IUserRepository
             createTime = user.CreateTime,
             Phone = user.PhoneNumber
         };
+    }
+
+    public bool Edit(UserEdit userEdit, string token)
+    {
+        var user = getUserByToken(token);
+        if (user == null) return false;
+        user.PhoneNumber = userEdit.PhoneNumber;
+        user.BirthDate = userEdit.BirthDate;
+        user.Gender = userEdit.Gender;
+        user.Email = userEdit.Email;
+        user.FullName = userEdit.FullName;
+        _db.SaveChanges();
+        return true;
     }
 }
