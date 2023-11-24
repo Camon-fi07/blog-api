@@ -28,7 +28,7 @@ public class UserRepository:IUserRepository
         var user = _db.Users.FirstOrDefault(u => u.Email == email);
         return user == null;
     }
-
+    
     private string tokenCreation(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -37,7 +37,7 @@ public class UserRepository:IUserRepository
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Sid, user.Id.ToString())
             }),
             Expires = DateTime.UtcNow.AddHours(2),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
@@ -56,10 +56,10 @@ public class UserRepository:IUserRepository
         
         var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
         
-        var userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == "email").Value;
-        if (userEmail == null) return null;
+        var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
+        if (userId == null) return null;
         
-        var user = _db.Users.FirstOrDefault(u => u.Email == userEmail);
+        var user = _db.Users.FirstOrDefault(u => u.Id.ToString() == userId);
 
         return user;
     }
