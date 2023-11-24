@@ -39,9 +39,16 @@ public class UsersController : Controller
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return Unauthorized(new {message = "Invalid token"});
-        var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
-        if (user == null) return BadRequest(new {message = "can't find user"});
-        return Ok(user);
+        try
+        {
+            var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
+            return Ok(user);
+        }
+        catch(Exception err)
+        {
+            return BadRequest(new {message = err.Message});
+        }
+        
     }
 
     [HttpPut("profile")]
@@ -50,8 +57,14 @@ public class UsersController : Controller
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return Unauthorized(new {message = "Invalid token"});
-        var result = _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
-        if (result) return Ok();
-        return BadRequest(new {message = "can't edit user with this token"});
+        try
+        {
+            _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
+            return Ok();
+        }
+        catch(Exception err)
+        {
+            return BadRequest(new {message = err.Message});
+        }
     }
 }

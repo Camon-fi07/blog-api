@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -47,21 +48,37 @@ public class UserRepository:IUserRepository
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-    
-    private User? getUserByToken(string token)
+
+    private string getIdByToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        
-        if (!tokenHandler.CanReadToken(token)) return null;
+
+        if (!tokenHandler.CanReadToken(token)) throw new Exception("Invalid token");
         
         var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
         
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
-        if (userId == null) return null;
-        
-        var user = _db.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            
+        if(userId == null) throw new Exception("Invalid token");
+            
+        return userId;
+    }
+    
+    private User getUserByToken(string token)
+    {
+        try
+        {
+            var userId = getIdByToken(token);
 
-        return user;
+            var user = _db.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            if(user == null) throw new Exception("Can't find user");
+            return user;
+        }
+        catch(Exception)
+        {
+            throw;
+        }
+        
     }
     
     public async Task<TokenResponseDto> Registration(UserRegister registrationRequest)
@@ -108,29 +125,42 @@ public class UserRepository:IUserRepository
 
     public UserDto? GetUser(string token)
     {
-        var user = getUserByToken(token);
-        if (user == null) return null;
-        return new UserDto()
+        try
         {
-            Email = user.Email,
-            Gender = user.Gender,
-            FullName = user.FullName,
-            Id = user.Id,
-            createTime = user.CreateTime,
-            Phone = user.PhoneNumber
-        };
+            var user = getUserByToken(token);
+            return new UserDto()
+            {
+                Email = user.Email,
+                Gender = user.Gender,
+                FullName = user.FullName,
+                Id = user.Id,
+                createTime = user.CreateTime,
+                Phone = user.PhoneNumber
+            };
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+       
     }
 
-    public bool Edit(UserEdit userEdit, string token)
+    public void Edit(UserEdit userEdit, string token)
     {
-        var user = getUserByToken(token);
-        if (user == null) return false;
-        user.PhoneNumber = userEdit.PhoneNumber;
-        user.BirthDate = userEdit.BirthDate;
-        user.Gender = userEdit.Gender;
-        user.Email = userEdit.Email;
-        user.FullName = userEdit.FullName;
-        _db.SaveChanges();
-        return true;
+        try
+        {
+            var user = getUserByToken(token);
+            user.PhoneNumber = userEdit.PhoneNumber;
+            user.BirthDate = userEdit.BirthDate;
+            user.Gender = userEdit.Gender;
+            user.Email = userEdit.Email;
+            user.FullName = userEdit.FullName;
+            _db.SaveChanges();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+       
     }
 }

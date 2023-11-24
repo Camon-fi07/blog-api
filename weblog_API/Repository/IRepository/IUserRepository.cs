@@ -11,7 +11,7 @@ public interface IUserRepository
     
     Task<TokenResponseDto> Registration(UserRegister registrationRequest);
     
-    bool Edit(UserEdit userEdit, string token);
+    void Edit(UserEdit userEdit, string token);
 
     UserDto? GetUser(string token);
 
