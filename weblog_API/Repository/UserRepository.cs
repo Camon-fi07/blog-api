@@ -16,12 +16,14 @@ public class UserRepository:IUserRepository
     private string secretKey;
     private string issuer;
     private string audience;
+    private string lifeTime;
     public UserRepository(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
         secretKey = configuration.GetValue<string>("ApiSettings:Secrets");
         issuer= configuration.GetValue<string>("ApiSettings:Issuer");
         audience = configuration.GetValue<string>("ApiSettings:Audience");
+        lifeTime = configuration.GetValue<string>("ApiSettings:TokenLifeTime");
     }
 
     public bool isUniqueUser(string email)
@@ -40,7 +42,7 @@ public class UserRepository:IUserRepository
             {
                 new Claim(ClaimTypes.Sid, user.Id.ToString())
             }),
-            Expires = DateTime.UtcNow.AddHours(2),
+            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(lifeTime)),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = issuer,
             Audience = audience
