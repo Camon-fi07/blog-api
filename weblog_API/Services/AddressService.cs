@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using weblog_API.Enums;
 using weblog_API.Models;
 using weblog_API.Services.IServices;
 
@@ -12,37 +13,44 @@ public class AddressService:IAddressService
     {
         _db = db;
     }
-
-    private async Task<AsAddrObj> getAddressById(long? id)
+    
+    private async Task<SearchAddress> getAddressById(long? id)
     {
-        var address = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
-        if (address == null) throw new Exception("can't find address");
-        return address;
+        AsAddrObj? addressObj;
+        AsHouse? addressHouse;
+        addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
+        if (addressObj == null)
+        {
+            addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
+            if (addressHouse == null) throw new Exception("can't find address");
+            return new SearchAddress()
+            {
+                Objectguid = addressHouse.Objectguid,
+                Objectid = addressHouse.Objectid,
+                Text = addressHouse.Housenum,
+                ObjectLevel = ObjectLevel.Building.ToString(),
+                ObjectLevelText = "д"
+            };
+        }
+        return new SearchAddress()
+        {
+            Objectguid = addressObj.Objectguid,
+            Objectid = addressObj.Objectid,
+            Text = addressObj.Name,
+            ObjectLevel = addressObj.Level,
+            ObjectLevelText = addressObj.Typename
+        };
     }
     
     public async Task<List<SearchAddress>> Search(long parentObjectId, string? query)
     {
         try
         {
-            var addresseHierarchies = _db.AsAdmHierarchies.Where(a => a.Parentobjid == parentObjectId).ToList();
-            List<AsAddrObj> addresses = new List<AsAddrObj>();
-            foreach (var address in addresseHierarchies)
-            { 
-                addresses.Add(await getAddressById(address.Objectid));
-            }
-            if(query!= null) addresses = addresses.Where(a => a.Name.ToLower().Contains(query.ToLower())).ToList();
-            
+            var addressesHierarchies = _db.AsAdmHierarchies.Where(a => a.Parentobjid == parentObjectId).ToList();
             List<SearchAddress> resultAddresses = new List<SearchAddress>();
-            foreach (var address in addresses)
+            foreach (var address in addressesHierarchies)
             {
-                resultAddresses.Add(new SearchAddress()
-                {
-                    Objectguid = address.Objectguid,
-                    Objectid = address.Objectid,
-                    Text = address.Name,
-                    ObjectLevel = address.Level,
-                    ObjectLevelText = address.Typename
-                });
+                resultAddresses.Add(await getAddressById(address.Objectid));
             }
 
             return resultAddresses;
@@ -51,7 +59,6 @@ public class AddressService:IAddressService
         {
             throw;
         }
-        
     }
 
     public async Task<List<SearchAddress>> AddressChain(Guid objectGuid)
