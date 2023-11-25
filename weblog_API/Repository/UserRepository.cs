@@ -1,24 +1,24 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
 using weblog_API.Repository.IRepository;
-
 namespace weblog_API.Repository;
 
 public class UserRepository:IUserRepository
 {
     private readonly AppDbContext _db;
-    private TokenProperties.TokenProperties tokenProperties;
+    private TokenProperties _tokenProperties;
     public UserRepository(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
-        configuration.GetSection(nameof(TokenProperties.TokenProperties)).Bind(tokenProperties);
+        _tokenProperties = new TokenProperties();
+        configuration.GetSection(nameof(TokenProperties)).Bind(_tokenProperties);
     }
 
     public async Task<bool> isUniqueUser(string email)
@@ -30,17 +30,17 @@ public class UserRepository:IUserRepository
     private string tokenCreation(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(tokenProperties.Secrets);
+        var key = Encoding.ASCII.GetBytes(_tokenProperties.Secrets);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Sid, user.Id.ToString())
             }),
-            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(tokenProperties.TokenLifeTime)),
+            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(_tokenProperties.TokenLifeTime)),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = tokenProperties.Issuer,
-            Audience = tokenProperties.Audience
+            Issuer = _tokenProperties.Issuer,
+            Audience = _tokenProperties.Audience
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);

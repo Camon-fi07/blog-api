@@ -1,4 +1,4 @@
-namespace weblog_API.TokenProperties;
+namespace weblog_API.AppSettingsModels;
 
 public class TokenProperties
 {
