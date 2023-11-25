@@ -14,17 +14,11 @@ namespace weblog_API.Repository;
 public class UserRepository:IUserRepository
 {
     private readonly AppDbContext _db;
-    private string secretKey;
-    private string issuer;
-    private string audience;
-    private string lifeTime;
+    private TokenProperties.TokenProperties tokenProperties;
     public UserRepository(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
-        secretKey = configuration.GetValue<string>("ApiSettings:Secrets");
-        issuer= configuration.GetValue<string>("ApiSettings:Issuer");
-        audience = configuration.GetValue<string>("ApiSettings:Audience");
-        lifeTime = configuration.GetValue<string>("ApiSettings:TokenLifeTime");
+        configuration.GetSection(nameof(TokenProperties.TokenProperties)).Bind(tokenProperties);
     }
 
     public async Task<bool> isUniqueUser(string email)
@@ -36,17 +30,17 @@ public class UserRepository:IUserRepository
     private string tokenCreation(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(secretKey);
+        var key = Encoding.ASCII.GetBytes(tokenProperties.Secrets);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Sid, user.Id.ToString())
             }),
-            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(lifeTime)),
+            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(tokenProperties.TokenLifeTime)),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = issuer,
-            Audience = audience
+            Issuer = tokenProperties.Issuer,
+            Audience = tokenProperties.Audience
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);

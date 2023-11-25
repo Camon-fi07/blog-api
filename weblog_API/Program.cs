@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using weblog_API.Data;
 using weblog_API.Repository;
 using weblog_API.Repository.IRepository;
+using weblog_API.TokenProperties;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,9 +15,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-var key = builder.Configuration.GetValue<string>("ApiSettings:Secrets");
-var issuer = builder.Configuration.GetValue<string>("ApiSettings:Issuer");
-var audience = builder.Configuration.GetValue<string>("ApiSettings:Audience");
+TokenProperties tokenProperties = new();
+builder.Configuration.GetSection(nameof(TokenProperties)).Bind(tokenProperties);
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -28,11 +29,11 @@ builder.Services.AddAuthentication(x =>
     x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
-        ValidIssuer = issuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(tokenProperties.Secrets)),
+        ValidIssuer = tokenProperties.Issuer,
         ValidateIssuer = true,
         ValidateLifetime = true,
-        ValidAudience = audience,
+        ValidAudience = tokenProperties.Audience,
         ValidateAudience = true
     };
 });
