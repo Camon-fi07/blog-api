@@ -19,29 +19,29 @@ public class UsersController : Controller
     [HttpPost("register")]
     public async Task<ActionResult<TokenResponseDto>> Register([FromBody] UserRegister userRegister)
     {
-        bool isUserUnique = _userRepository.isUniqueUser(userRegister.Email);
+        var isUserUnique = await _userRepository.isUniqueUser(userRegister.Email);
         if (!isUserUnique) return BadRequest(new { message = "There is already a user with this email " });
         var token = await _userRepository.Registration(userRegister);
         return Ok(token);
     }
 
     [HttpPost("login")]
-    public ActionResult<TokenResponseDto> Login([FromBody] LoginCredentials loginCredentials)
+    public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginCredentials loginCredentials)
     {
-        var token = _userRepository.Login(loginCredentials);
+        var token = await _userRepository.Login(loginCredentials);
         if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
         return Ok(token);
     }
 
     [HttpGet("profile")]
     [Authorize]
-    public ActionResult<UserDto> Profile()
+    public async Task<ActionResult<UserDto>> Profile()
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return Unauthorized(new {message = "Invalid token"});
         try
         {
-            var user = _userRepository.GetUser(token.Substring("Bearer ".Length));
+            var user = await _userRepository.GetUser(token.Substring("Bearer ".Length));
             return Ok(user);
         }
         catch(Exception err)
@@ -53,13 +53,13 @@ public class UsersController : Controller
 
     [HttpPut("profile")]
     [Authorize]
-    public IActionResult EditProfile([FromBody] UserEdit userEdit)
+    public async Task<IActionResult> EditProfile([FromBody] UserEdit userEdit)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         if (token == null) return Unauthorized(new {message = "Invalid token"});
         try
         {
-            _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
+            await _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
             return Ok();
         }
         catch(Exception err)

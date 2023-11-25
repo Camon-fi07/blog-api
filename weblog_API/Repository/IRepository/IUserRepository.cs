@@ -5,14 +5,14 @@ namespace weblog_API.Repository.IRepository;
 
 public interface IUserRepository
 {
-    bool isUniqueUser(string email);
+    Task<bool> isUniqueUser(string email);
 
-    TokenResponseDto Login(LoginCredentials loginRequest); 
+    Task<TokenResponseDto> Login(LoginCredentials loginRequest); 
     
     Task<TokenResponseDto> Registration(UserRegister registrationRequest);
     
-    void Edit(UserEdit userEdit, string token);
+    Task Edit(UserEdit userEdit, string token);
 
-    UserDto? GetUser(string token);
+    Task<UserDto> GetUser(string token);
 
 }

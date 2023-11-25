@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
@@ -26,9 +27,9 @@ public class UserRepository:IUserRepository
         lifeTime = configuration.GetValue<string>("ApiSettings:TokenLifeTime");
     }
 
-    public bool isUniqueUser(string email)
+    public async Task<bool> isUniqueUser(string email)
     {
-        var user = _db.Users.FirstOrDefault(u => u.Email == email);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         return user == null;
     }
     
@@ -66,13 +67,13 @@ public class UserRepository:IUserRepository
         return userId;
     }
     
-    private User getUserByToken(string token)
+    private async Task<User> getUserByToken(string token)
     {
         try
         {
             var userId = getIdByToken(token);
 
-            var user = _db.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
             if(user == null) throw new Exception("Can't find user");
             return user;
         }
@@ -101,9 +102,9 @@ public class UserRepository:IUserRepository
         return new TokenResponseDto(){Token = tokenCreation(user)};
     }
 
-    public TokenResponseDto Login(LoginCredentials loginRequest)
+    public async Task<TokenResponseDto> Login(LoginCredentials loginRequest)
     {
-        var user = _db.Users.FirstOrDefault(u => u.Email == loginRequest.Email);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
         if (user == null)
         {
             return new TokenResponseDto()
@@ -125,11 +126,11 @@ public class UserRepository:IUserRepository
         };
     }
 
-    public UserDto? GetUser(string token)
+    public async Task<UserDto> GetUser(string token)
     {
         try
         {
-            var user = getUserByToken(token);
+            var user = await getUserByToken(token);
             return new UserDto()
             {
                 Email = user.Email,
@@ -147,17 +148,17 @@ public class UserRepository:IUserRepository
        
     }
 
-    public void Edit(UserEdit userEdit, string token)
+    public async Task Edit(UserEdit userEdit, string token)
     {
         try
         {
-            var user = getUserByToken(token);
+            var user = await getUserByToken(token);
             user.PhoneNumber = userEdit.PhoneNumber;
             user.BirthDate = userEdit.BirthDate;
             user.Gender = userEdit.Gender;
             user.Email = userEdit.Email;
             user.FullName = userEdit.FullName;
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
         }
         catch (Exception)
         {
