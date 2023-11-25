@@ -7,14 +7,15 @@ using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
-using weblog_API.Repository.IRepository;
-namespace weblog_API.Repository;
+using weblog_API.Services.IServices;
 
-public class UserRepository:IUserRepository
+namespace weblog_API.Services;
+
+public class UserService:IUserService
 {
     private readonly AppDbContext _db;
     private TokenProperties _tokenProperties;
-    public UserRepository(AppDbContext db, IConfiguration configuration)
+    public UserService(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
         _tokenProperties = new TokenProperties();

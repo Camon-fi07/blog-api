@@ -1,9 +1,9 @@
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
 
-namespace weblog_API.Repository.IRepository;
+namespace weblog_API.Services.IServices;
 
-public interface IUserRepository
+public interface IUserService
 {
     Task<bool> isUniqueUser(string email);
 

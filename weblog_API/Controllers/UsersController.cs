@@ -2,33 +2,33 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
 using weblog_API.Models.User;
-using weblog_API.Repository.IRepository;
+using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
 [Route("api/Users")]
 [ApiController]
 public class UsersController : Controller
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
-    public UsersController(IUserRepository userRepository)
+    public UsersController(IUserService userService)
     {
-        _userRepository = userRepository;
+        _userService = userService;
     }
     
     [HttpPost("register")]
     public async Task<ActionResult<TokenResponseDto>> Register([FromBody] UserRegister userRegister)
     {
-        var isUserUnique = await _userRepository.isUniqueUser(userRegister.Email);
+        var isUserUnique = await _userService.isUniqueUser(userRegister.Email);
         if (!isUserUnique) return BadRequest(new { message = "There is already a user with this email " });
-        var token = await _userRepository.Registration(userRegister);
+        var token = await _userService.Registration(userRegister);
         return Ok(token);
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginCredentials loginCredentials)
     {
-        var token = await _userRepository.Login(loginCredentials);
+        var token = await _userService.Login(loginCredentials);
         if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
         return Ok(token);
     }
@@ -41,7 +41,7 @@ public class UsersController : Controller
         if (token == null) return Unauthorized(new {message = "Invalid token"});
         try
         {
-            var user = await _userRepository.GetUser(token.Substring("Bearer ".Length));
+            var user = await _userService.GetUser(token.Substring("Bearer ".Length));
             return Ok(user);
         }
         catch(Exception err)
@@ -59,7 +59,7 @@ public class UsersController : Controller
         if (token == null) return Unauthorized(new {message = "Invalid token"});
         try
         {
-            await _userRepository.Edit(userEdit, token.Substring("Bearer ".Length));
+            await _userService.Edit(userEdit, token.Substring("Bearer ".Length));
             return Ok();
         }
         catch(Exception err)
