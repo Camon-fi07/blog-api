@@ -11,7 +11,6 @@ namespace weblog_API.Controllers;
 public class UsersController : Controller
 {
     private readonly IUserService _userService;
-
     public UsersController(IUserService userService)
     {
         _userService = userService;
