@@ -41,6 +41,14 @@ public class AddressService:IAddressService
             ObjectLevelText = addressObj.Typename
         };
     }
+
+    private async Task<long?> getIdByGuid(Guid guid)
+    {
+        var id = (await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectguid == guid))?.Objectid;
+        if (id == null) id = (await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectguid == guid))?.Objectid;
+        if (id == null) throw new Exception("can't find address with this id");
+        return id;
+    }
     
     public async Task<List<SearchAddress>> Search(long parentObjectId, string? query)
     {
@@ -63,6 +71,21 @@ public class AddressService:IAddressService
 
     public async Task<List<SearchAddress>> AddressChain(Guid objectGuid)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var objectId = await getIdByGuid(objectGuid);
+            var ids = (await _db.AsAdmHierarchies.FirstOrDefaultAsync(a => a.Objectid == objectId))?.Path!.Split(".");
+            List<SearchAddress> path = new List<SearchAddress>();
+            foreach (var id in ids)
+            {   
+                path.Add(await getAddressById(long.Parse(id)));
+            }
+
+            return path;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 }

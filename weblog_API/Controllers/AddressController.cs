@@ -26,6 +26,19 @@ public class AddressController : Controller
         {
             return BadRequest(e.Message);
         }
+    }
+    [HttpGet("chain")]
+    public async Task<ActionResult<SearchAddress>> Search(Guid objectGuid)
+    {
+        try
+        {
+            var path = await _addressService.AddressChain(objectGuid);
+            return Ok(path);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
         
     }
 }
