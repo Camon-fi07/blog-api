@@ -58,7 +58,9 @@ public class AddressService:IAddressService
             List<SearchAddress> resultAddresses = new List<SearchAddress>();
             foreach (var address in addressesHierarchies)
             {
-                resultAddresses.Add(await getAddressById(address.Objectid));
+                var searchAddress = await getAddressById(address.Objectid);
+                if (searchAddress.Text.ToLower().Contains(query == null ? "" : query.ToLower())) resultAddresses.Add(searchAddress);
+                
             }
 
             return resultAddresses;
