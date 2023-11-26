@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Models;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -47,6 +48,11 @@ public class UserService:IUserService
         return tokenHandler.WriteToken(token);
     }
 
+    private async Task<bool> isTokenBanned(string token)
+    {
+        return await _db.BannedTokens.AnyAsync(t => t.Token == token);
+    }
+
     private string getIdByToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -56,7 +62,6 @@ public class UserService:IUserService
         var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
         
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
-            
         if(userId == null) throw new Exception("Invalid token");
             
         return userId;
@@ -66,6 +71,7 @@ public class UserService:IUserService
     {
         try
         {
+            if (await isTokenBanned(token)) throw new Exception("token is banned");
             var userId = getIdByToken(token);
 
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
@@ -79,7 +85,7 @@ public class UserService:IUserService
         
     }
     
-    public async Task<TokenResponseDto> Registration(UserRegister registrationRequest)
+    public async Task<TokenModel> Registration(UserRegister registrationRequest)
     {
         User user = new()
         {
@@ -94,15 +100,15 @@ public class UserService:IUserService
         };
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
-        return new TokenResponseDto(){Token = tokenCreation(user)};
+        return new TokenModel(){Token = tokenCreation(user)};
     }
 
-    public async Task<TokenResponseDto> Login(LoginCredentials loginRequest)
+    public async Task<TokenModel> Login(LoginCredentials loginRequest)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
         if (user == null)
         {
-            return new TokenResponseDto()
+            return new TokenModel()
             {
                 Token = ""
             };
@@ -110,12 +116,12 @@ public class UserService:IUserService
 
         if (BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
-            return new TokenResponseDto()
+            return new TokenModel()
             {
                 Token = tokenCreation(user)
             };
         }
-        else return new TokenResponseDto()
+        else return new TokenModel()
         {
             Token = ""
         };
@@ -159,6 +165,12 @@ public class UserService:IUserService
         {
             throw;
         }
-       
+    }
+
+    public async Task Logout(string token)
+    {
+        if (await _db.BannedTokens.AnyAsync(t => t.Token == token)) throw new Exception("token has already banned");
+        _db.BannedTokens.Add(new TokenModel{Token = token});
+        await _db.SaveChangesAsync();
     }
 }

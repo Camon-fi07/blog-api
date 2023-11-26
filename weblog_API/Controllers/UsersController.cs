@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
+using weblog_API.Models;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -17,7 +18,7 @@ public class UsersController : Controller
     }
     
     [HttpPost("register")]
-    public async Task<ActionResult<TokenResponseDto>> Register([FromBody] UserRegister userRegister)
+    public async Task<ActionResult<TokenModel>> Register([FromBody] UserRegister userRegister)
     {
         var isUserUnique = await _userService.isUniqueUser(userRegister.Email);
         if (!isUserUnique) return BadRequest(new { message = "There is already a user with this email " });
@@ -26,7 +27,7 @@ public class UsersController : Controller
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginCredentials loginCredentials)
+    public async Task<ActionResult<TokenModel>> Login([FromBody] LoginCredentials loginCredentials)
     {
         var token = await _userService.Login(loginCredentials);
         if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
@@ -60,6 +61,23 @@ public class UsersController : Controller
         try
         {
             await _userService.Edit(userEdit, token.Substring("Bearer ".Length));
+            return Ok();
+        }
+        catch(Exception err)
+        {
+            return BadRequest(new {message = err.Message});
+        }
+    }
+    
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        if (token == null) return Unauthorized(new {message = "Invalid token"});
+        try
+        {
+            await _userService.Logout(token.Substring("Bearer ".Length));
             return Ok();
         }
         catch(Exception err)
