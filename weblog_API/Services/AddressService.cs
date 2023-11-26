@@ -17,10 +17,10 @@ public class AddressService:IAddressService
     private async Task<SearchAddress> getAddressById(long? id)
     {
         AsAddrObj? addressObj;
-        AsHouse? addressHouse;
         addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
         if (addressObj == null)
         {
+            AsHouse? addressHouse;
             addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
             if (addressHouse == null) throw new Exception("can't find address");
             return new SearchAddress()
@@ -29,7 +29,7 @@ public class AddressService:IAddressService
                 Objectid = addressHouse.Objectid,
                 Text = addressHouse.Housenum,
                 ObjectLevel = ObjectLevel.Building.ToString(),
-                ObjectLevelText = "д"
+                ObjectLevelText = "Здание (сооружение)"
             };
         }
         return new SearchAddress()
