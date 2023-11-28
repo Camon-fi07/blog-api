@@ -16,73 +16,19 @@ public class UserService:IUserService
 {
     private readonly AppDbContext _db;
     private TokenProperties _tokenProperties;
-    public UserService(AppDbContext db, IConfiguration configuration)
+    private ITokenService _tokenService;
+    public UserService(AppDbContext db, IConfiguration configuration, ITokenService tokenService)
     {
         _db = db;
         _tokenProperties = new TokenProperties();
         configuration.GetSection(nameof(TokenProperties)).Bind(_tokenProperties);
+        _tokenService = tokenService;
     }
 
     public async Task<bool> isUniqueUser(string email)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         return user == null;
-    }
-    
-    private string tokenCreation(User user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_tokenProperties.Secrets);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.Sid, user.Id.ToString())
-            }),
-            Expires = DateTime.UtcNow.Add(TimeSpan.Parse(_tokenProperties.TokenLifeTime)),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = _tokenProperties.Issuer,
-            Audience = _tokenProperties.Audience
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
-    }
-
-    private async Task<bool> isTokenBanned(string token)
-    {
-        return await _db.BannedTokens.AnyAsync(t => t.Token == token);
-    }
-
-    private string getIdByToken(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        if (!tokenHandler.CanReadToken(token)) throw new Exception("Invalid token");
-        
-        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-        
-        var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
-        if(userId == null) throw new Exception("Invalid token");
-            
-        return userId;
-    }
-    
-    private async Task<User> getUserByToken(string token)
-    {
-        try
-        {
-            if (await isTokenBanned(token)) throw new Exception("token is banned");
-            var userId = getIdByToken(token);
-
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-            if(user == null) throw new Exception("Can't find user");
-            return user;
-        }
-        catch(Exception)
-        {
-            throw;
-        }
-        
     }
     
     public async Task<TokenModel> Registration(UserRegister registrationRequest)
@@ -100,7 +46,7 @@ public class UserService:IUserService
         };
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
-        return new TokenModel(){Token = tokenCreation(user)};
+        return new TokenModel(){Token =_tokenService.CreateToken(user)};
     }
 
     public async Task<TokenModel> Login(LoginCredentials loginRequest)
@@ -118,7 +64,7 @@ public class UserService:IUserService
         {
             return new TokenModel()
             {
-                Token = tokenCreation(user)
+                Token = _tokenService.CreateToken(user)
             };
         }
         else return new TokenModel()
@@ -131,7 +77,7 @@ public class UserService:IUserService
     {
         try
         {
-            var user = await getUserByToken(token);
+            var user = await _tokenService.GetUserByToken(token);
             return new UserDto()
             {
                 Email = user.Email,
@@ -153,7 +99,7 @@ public class UserService:IUserService
     {
         try
         {
-            var user = await getUserByToken(token);
+            var user = await _tokenService.GetUserByToken(token);
             user.PhoneNumber = userEdit.PhoneNumber;
             user.BirthDate = userEdit.BirthDate;
             user.Gender = userEdit.Gender;
