@@ -58,6 +58,23 @@ public class CommunityService:ICommunityService
         await _db.SaveChangesAsync();
     }
 
+    public async Task deleteCommunity(string token, Guid communityId)
+    {
+        var user = await _tokenService.GetUserByToken(token);
+        var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
+        if (userCommunity.UserRole != Role.Admin) throw new Exception("you don't have rights");
+        var userCommunitiesList = _db.UserCommunities.ToList();
+        var community = userCommunity.Community;
+        foreach (var subscriberCommunity in community.Subscribers)
+        {
+            var subscriber = subscriberCommunity.User;
+            user.Communities.Remove(subscriberCommunity);
+            userCommunitiesList.Remove(subscriberCommunity);
+        }
+        _db.Communities.Remove(community);
+        await _db.SaveChangesAsync();
+    }
+
     public List<CommunityDto> getCommunityList()
     {
         var communities = _db.Communities.Include(c => c.Subscribers).ToList();
@@ -131,10 +148,18 @@ public class CommunityService:ICommunityService
         var user = await _tokenService.GetUserByToken(token);
         var community = await getCommunityById(communityId);
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
-        community.Subscribers.Remove(userCommunity);
-        user.Communities.Remove(userCommunity);
-        _db.UserCommunities.ToList().Remove(userCommunity);
-        await _db.SaveChangesAsync();
+        var admins = community.Subscribers.Where(uc => uc.UserRole == Role.Admin).ToList();
+        if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await deleteCommunity(token, communityId);}
+        else
+        {
+            community.Subscribers.Remove(userCommunity);
+            user.Communities.Remove(userCommunity);
+            _db.UserCommunities.ToList().Remove(userCommunity);
+            await _db.SaveChangesAsync();
+        }
+        
+        
+        
     }
 
     public async Task<string> getUserRole(string token, Guid communityId)

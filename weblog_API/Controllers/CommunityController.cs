@@ -103,4 +103,18 @@ public class CommunityController : Controller
             return BadRequest(e.Message);
         }
     }
+    [HttpDelete("{id:guid}/delete")]
+    public async Task<ActionResult<CommunityFullDto>> DeleteCommunity(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        try
+        {
+            await _communityService.deleteCommunity(token.Substring("Bearer ".Length), id);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
