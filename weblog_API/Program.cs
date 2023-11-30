@@ -17,8 +17,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDbContext<AddressDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICommunityService, CommunityService>();
 
 TokenProperties tokenProperties = new();
 builder.Configuration.GetSection(nameof(TokenProperties)).Bind(tokenProperties);

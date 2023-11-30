@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace weblog_API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCommunity : Migration
+    public partial class Addcommunity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,7 @@ namespace weblog_API.Migrations
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CommunityId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserRole = table.Column<string>(type: "text", nullable: false)
+                    UserRole = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

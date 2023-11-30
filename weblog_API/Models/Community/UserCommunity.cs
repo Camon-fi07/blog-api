@@ -1,3 +1,5 @@
+using weblog_API.Enums;
+
 namespace weblog_API.Models.Community;
 
 public class UserCommunity
@@ -6,5 +8,5 @@ public class UserCommunity
     public Guid CommunityId { get; set; }
     public Community Community { get; set; }
     public User.User User { get; set; }
-    public string UserRole { get; set; }
+    public Role UserRole { get; set; }
 }

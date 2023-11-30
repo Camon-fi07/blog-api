@@ -4,7 +4,7 @@ namespace weblog_API.Services.IServices;
 
 public interface ICommunityService
 {
-    public Task createCommunity(string token);
+    public Task createCommunity(CreateCommunityDto communityInfo,string token);
     
     public Task<CommunityFullDto> getCommunity(Guid id);
     

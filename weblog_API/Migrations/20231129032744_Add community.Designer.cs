@@ -12,8 +12,8 @@ using weblog_API.Data;
 namespace weblog_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231128114146_Add Community")]
-    partial class AddCommunity
+    [Migration("20231129032744_Add community")]
+    partial class Addcommunity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,9 +58,8 @@ namespace weblog_API.Migrations
                     b.Property<Guid>("CommunityId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserRole")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserRole")
+                        .HasColumnType("integer");
 
                     b.HasKey("UserId", "CommunityId");
 

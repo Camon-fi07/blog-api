@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Enums;
 using weblog_API.Models.Community;
 
 namespace weblog_API.Services.IServices;
@@ -14,19 +16,81 @@ public class CommunityService:ICommunityService
         _tokenService = tokenService;
     }
 
-    public Task createCommunity(string token)
+    public async Task createCommunity(CreateCommunityDto communityInfo, string token)
     {
-        throw new NotImplementedException();
+        var creator = await _tokenService.GetUserByToken(token);
+        var community = new Community()
+        {
+            Id = Guid.NewGuid(),
+            CreateTime = DateTime.UtcNow,
+            Description = communityInfo.Description,
+            IsClosed = communityInfo.IsClosed,
+            Name = communityInfo.Name,
+            Subscribers = new List<UserCommunity>()
+        };
+        var userCommunity = new UserCommunity()
+        {
+            User = creator,
+            CommunityId = community.Id,
+            Community = community,
+            UserRole = Role.Admin,
+            UserId = creator.Id
+        };
+        community.Subscribers.Add(userCommunity);
+        creator.Communities.Add(userCommunity);
+        _db.Communities.Add(community);
+        _db.UserCommunities.Add(userCommunity);
+        await _db.SaveChangesAsync();
     }
 
     public List<CommunityDto> getCommunityList()
     {
-        throw new NotImplementedException();
+        var communities = _db.Communities.Include(c => c.Subscribers).ToList();
+        List<CommunityDto> communityDtos = new List<CommunityDto>();
+        foreach (var community in communities)
+        {
+            communityDtos.Add(new CommunityDto()
+            {
+                Id = community.Id,
+                Description = community.Description,
+                IsClosed = community.IsClosed,
+                Name = community.Name,
+                CreateTime = community.CreateTime,
+                SubscribersCount = community.Subscribers.Count
+            });
+        }
+
+        return communityDtos;
     }
 
-    public Task<CommunityFullDto> getCommunity(Guid id)
+    public async Task<CommunityFullDto> getCommunity(Guid id)
     {
-        throw new NotImplementedException();
+        var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User).FirstOrDefaultAsync(c => c.Id==id);
+        var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).ToList();
+        List<UserDto> adminsDto = new List<UserDto>();
+        foreach (var admin in admins)
+        {
+           adminsDto.Add(new UserDto()
+           {
+               Id = admin.User.Id,
+               createTime = admin.User.CreateTime,
+               Phone = admin.User.PhoneNumber,
+               FullName = admin.User.FullName,
+               Gender = admin.User.Gender,
+               Email = admin.User.Email
+           });
+        }
+
+        return new CommunityFullDto()
+        {
+            Id = community.Id,
+            Description = community.Description,
+            IsClosed = community.IsClosed,
+            Name = community.Name,
+            CreateTime = community.CreateTime,
+            SubscribersCount = community.Subscribers.Count,
+            Administrators = adminsDto
+        };
     }
 
     public Task subscribeUser(string token, Guid communityId)

@@ -55,9 +55,8 @@ namespace weblog_API.Migrations
                     b.Property<Guid>("CommunityId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserRole")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserRole")
+                        .HasColumnType("integer");
 
                     b.HasKey("UserId", "CommunityId");
 

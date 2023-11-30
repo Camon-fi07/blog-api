@@ -66,7 +66,7 @@ public class TokenService:ITokenService
             if (await IsTokenBanned(token)) throw new Exception("token is banned");
             var userId = getIdByToken(token);
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+            var user = await _db.Users.Include(u => u.Communities).FirstOrDefaultAsync(u => u.Id.ToString() == userId);
             if(user == null) throw new Exception("Can't find user");
             return user;
         }
