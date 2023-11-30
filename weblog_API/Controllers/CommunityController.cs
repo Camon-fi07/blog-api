@@ -73,4 +73,34 @@ public class CommunityController : Controller
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpPost("{id:guid}/subscribe")]
+    public async Task<ActionResult<CommunityFullDto>> SubscribeUser(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        try
+        {
+            await _communityService.subscribeUser(token.Substring("Bearer ".Length), id);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpDelete("{id:guid}/unsubscribe")]
+    public async Task<ActionResult<CommunityFullDto>> UnsubscribeUser(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        try
+        {
+            await _communityService.unsubscribeUser(token.Substring("Bearer ".Length), id);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

@@ -16,6 +16,21 @@ public class CommunityService:ICommunityService
         _tokenService = tokenService;
     }
 
+    private async Task<Community> getCommunityById(Guid Id)
+    {
+        try
+        {
+            var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User)
+                .FirstOrDefaultAsync(c => c.Id == Id);
+            if (community == null) throw new Exception("invalid id");
+            return community;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    
     public async Task createCommunity(CreateCommunityDto communityInfo, string token)
     {
         var creator = await _tokenService.GetUserByToken(token);
@@ -93,14 +108,33 @@ public class CommunityService:ICommunityService
         };
     }
 
-    public Task subscribeUser(string token, Guid communityId)
+    public async Task subscribeUser(string token, Guid communityId)
     {
-        throw new NotImplementedException();
+        var user = await _tokenService.GetUserByToken(token);
+        var community = await getCommunityById(communityId);
+        UserCommunity userCommunity = new UserCommunity()
+        {
+            User = user,
+            CommunityId = communityId,
+            Community = community,
+            UserRole = Role.Subscriber,
+            UserId = user.Id
+        };
+        community.Subscribers.Add(userCommunity);
+        user.Communities.Add(userCommunity);
+        _db.UserCommunities.Add(userCommunity);
+        await _db.SaveChangesAsync();
     }
 
-    public Task unsubscribeUser(string token, Guid communityId)
+    public async Task unsubscribeUser(string token, Guid communityId)
     {
-        throw new NotImplementedException();
+        var user = await _tokenService.GetUserByToken(token);
+        var community = await getCommunityById(communityId);
+        var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
+        community.Subscribers.Remove(userCommunity);
+        user.Communities.Remove(userCommunity);
+        _db.UserCommunities.ToList().Remove(userCommunity);
+        await _db.SaveChangesAsync();
     }
 
     public async Task<string> getUserRole(string token, Guid communityId)
