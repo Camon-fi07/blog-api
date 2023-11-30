@@ -16,7 +16,7 @@ public class CommunityController : Controller
     }
     
     [HttpPost("create")]
-    public async Task<IActionResult> createCommunity([FromBody] CreateCommunityDto communityInfo)
+    public async Task<IActionResult> CreateCommunity([FromBody] CreateCommunityDto communityInfo)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         try
@@ -31,7 +31,7 @@ public class CommunityController : Controller
         
     }
     [HttpGet("")]
-    public ActionResult<CommunityDto> getCommunities()
+    public ActionResult<CommunityDto> GetCommunities()
     {
         try
         {
@@ -44,8 +44,8 @@ public class CommunityController : Controller
         }
         
     }
-    [HttpGet("community/{id:guid}")]
-    public async Task<ActionResult<CommunityFullDto>> getCommunity(Guid id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<CommunityFullDto>> GetCommunity(Guid id)
     {
         try
         {
@@ -57,5 +57,20 @@ public class CommunityController : Controller
             return BadRequest(e.Message);
         }
         
+    }
+    
+    [HttpGet("{id:guid}/role")]
+    public async Task<ActionResult<CommunityFullDto>> GetUserRole(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        try
+        {
+            var role = await _communityService.getUserRole(token.Substring("Bearer ".Length), id);
+            return Ok(role);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 }

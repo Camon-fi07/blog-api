@@ -103,9 +103,12 @@ public class CommunityService:ICommunityService
         throw new NotImplementedException();
     }
 
-    public Task<string> getUserRole(string token, Guid communityId)
+    public async Task<string> getUserRole(string token, Guid communityId)
     {
-        throw new NotImplementedException();
+        var user = await _tokenService.GetUserByToken(token);
+        var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == communityId);
+        if (userCommunity == null) throw new Exception("user is not a subscriber of this group");
+        return Enum.GetName(typeof(Role), userCommunity.UserRole);
     }
 
     public Task<List<CommunityUserDto>> getUserCommunityList(string token)
