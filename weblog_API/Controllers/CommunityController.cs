@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
+using weblog_API.Enums;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
 
-[Route("api/Community")]
+[Route("api/community")]
 [ApiController]
 public class CommunityController : Controller
 {
@@ -21,7 +22,7 @@ public class CommunityController : Controller
         string token = HttpContext.Request.Headers["Authorization"];
         try
         {
-            await _communityService.createCommunity(communityInfo, token.Substring("Bearer ".Length));
+            await _communityService.CreateCommunity(communityInfo, token.Substring("Bearer ".Length));
             return Ok();
         }
         catch (Exception e)
@@ -35,7 +36,7 @@ public class CommunityController : Controller
     {
         try
         {
-            var communityDtos = _communityService.getCommunityList();
+            var communityDtos = _communityService.GetCommunityList();
             return Ok(communityDtos);
         }
         catch (Exception e)
@@ -49,23 +50,22 @@ public class CommunityController : Controller
     {
         try
         {
-            var community = await _communityService.getCommunity(id);
+            var community = await _communityService.GetCommunity(id);
             return Ok(community);
         }
         catch (Exception e)
         {
             return BadRequest(e.Message);
         }
-        
     }
     
     [HttpGet("{id:guid}/role")]
-    public async Task<ActionResult<CommunityFullDto>> GetUserRole(Guid id)
+    public async Task<ActionResult<string?>> GetUserRole(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         try
         {
-            var role = await _communityService.getUserRole(token.Substring("Bearer ".Length), id);
+            var role = await _communityService.GetUserRole(token.Substring("Bearer ".Length), id);
             return Ok(role);
         }
         catch (Exception e)
@@ -75,12 +75,12 @@ public class CommunityController : Controller
     }
     
     [HttpPost("{id:guid}/subscribe")]
-    public async Task<ActionResult<CommunityFullDto>> SubscribeUser(Guid id)
+    public async Task<IActionResult> SubscribeUser(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         try
         {
-            await _communityService.subscribeUser(token.Substring("Bearer ".Length), id);
+            await _communityService.SubscribeUser(token.Substring("Bearer ".Length), id);
             return Ok();
         }
         catch (Exception e)
@@ -90,12 +90,12 @@ public class CommunityController : Controller
     }
     
     [HttpDelete("{id:guid}/unsubscribe")]
-    public async Task<ActionResult<CommunityFullDto>> UnsubscribeUser(Guid id)
+    public async Task<IActionResult> UnsubscribeUser(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         try
         {
-            await _communityService.unsubscribeUser(token.Substring("Bearer ".Length), id);
+            await _communityService.UnsubscribeUser(token.Substring("Bearer ".Length), id);
             return Ok();
         }
         catch (Exception e)
@@ -104,12 +104,12 @@ public class CommunityController : Controller
         }
     }
     [HttpDelete("{id:guid}/delete")]
-    public async Task<ActionResult<CommunityFullDto>> DeleteCommunity(Guid id)
+    public async Task<IActionResult> DeleteCommunity(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         try
         {
-            await _communityService.deleteCommunity(token.Substring("Bearer ".Length), id);
+            await _communityService.DeleteCommunity(token.Substring("Bearer ".Length), id);
             return Ok();
         }
         catch (Exception e)

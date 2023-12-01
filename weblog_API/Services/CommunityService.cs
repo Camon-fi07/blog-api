@@ -16,7 +16,7 @@ public class CommunityService:ICommunityService
         _tokenService = tokenService;
     }
 
-    private async Task<Community> getCommunityById(Guid Id)
+    private async Task<Community> GetCommunityById(Guid Id)
     {
         try
         {
@@ -31,7 +31,7 @@ public class CommunityService:ICommunityService
         }
     }
     
-    public async Task createCommunity(CreateCommunityDto communityInfo, string token)
+    public async Task CreateCommunity(CreateCommunityDto communityInfo, string token)
     {
         var creator = await _tokenService.GetUserByToken(token);
         var community = new Community()
@@ -58,7 +58,7 @@ public class CommunityService:ICommunityService
         await _db.SaveChangesAsync();
     }
 
-    public async Task deleteCommunity(string token, Guid communityId)
+    public async Task DeleteCommunity(string token, Guid communityId)
     {
         var user = await _tokenService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
@@ -75,7 +75,7 @@ public class CommunityService:ICommunityService
         await _db.SaveChangesAsync();
     }
 
-    public List<CommunityDto> getCommunityList()
+    public List<CommunityDto> GetCommunityList()
     {
         var communities = _db.Communities.Include(c => c.Subscribers).ToList();
         List<CommunityDto> communityDtos = new List<CommunityDto>();
@@ -95,7 +95,7 @@ public class CommunityService:ICommunityService
         return communityDtos;
     }
 
-    public async Task<CommunityFullDto> getCommunity(Guid id)
+    public async Task<CommunityFullDto> GetCommunity(Guid id)
     {
         var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User).FirstOrDefaultAsync(c => c.Id==id);
         var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).ToList();
@@ -125,10 +125,10 @@ public class CommunityService:ICommunityService
         };
     }
 
-    public async Task subscribeUser(string token, Guid communityId)
+    public async Task SubscribeUser(string token, Guid communityId)
     {
         var user = await _tokenService.GetUserByToken(token);
-        var community = await getCommunityById(communityId);
+        var community = await GetCommunityById(communityId);
         UserCommunity userCommunity = new UserCommunity()
         {
             User = user,
@@ -143,13 +143,13 @@ public class CommunityService:ICommunityService
         await _db.SaveChangesAsync();
     }
 
-    public async Task unsubscribeUser(string token, Guid communityId)
+    public async Task UnsubscribeUser(string token, Guid communityId)
     {
         var user = await _tokenService.GetUserByToken(token);
-        var community = await getCommunityById(communityId);
+        var community = await GetCommunityById(communityId);
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
         var admins = community.Subscribers.Where(uc => uc.UserRole == Role.Admin).ToList();
-        if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await deleteCommunity(token, communityId);}
+        if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await DeleteCommunity(token, communityId);}
         else
         {
             community.Subscribers.Remove(userCommunity);
@@ -157,20 +157,16 @@ public class CommunityService:ICommunityService
             _db.UserCommunities.ToList().Remove(userCommunity);
             await _db.SaveChangesAsync();
         }
-        
-        
-        
     }
 
-    public async Task<string> getUserRole(string token, Guid communityId)
+    public async Task<string?> GetUserRole(string token, Guid communityId)
     {
         var user = await _tokenService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == communityId);
-        if (userCommunity == null) throw new Exception("user is not a subscriber of this group");
-        return Enum.GetName(typeof(Role), userCommunity.UserRole);
+        return userCommunity == null ? null : Enum.GetName(typeof(Role), userCommunity.UserRole);
     }
 
-    public Task<List<CommunityUserDto>> getUserCommunityList(string token)
+    public Task<List<CommunityUserDto>> GetUserCommunityList(string token)
     {
         throw new NotImplementedException();
     }

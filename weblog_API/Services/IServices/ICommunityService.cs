@@ -4,19 +4,19 @@ namespace weblog_API.Services.IServices;
 
 public interface ICommunityService
 {
-    public Task createCommunity(CreateCommunityDto communityInfo,string token);
+    public Task CreateCommunity(CreateCommunityDto communityInfo,string token);
 
-    public Task deleteCommunity(string token, Guid communityId);
+    public Task DeleteCommunity(string token, Guid communityId);
     
-    public Task<CommunityFullDto> getCommunity(Guid id);
+    public Task<CommunityFullDto> GetCommunity(Guid id);
     
-    public List<CommunityDto> getCommunityList();
+    public List<CommunityDto> GetCommunityList();
     
-    public Task<List<CommunityUserDto>> getUserCommunityList(string token);
+    public Task<List<CommunityUserDto>> GetUserCommunityList(string token);
 
-    public Task<string> getUserRole(string token, Guid communityId);
+    public Task<string?> GetUserRole(string token, Guid communityId);
 
-    public Task subscribeUser(string token, Guid communityId);
+    public Task SubscribeUser(string token, Guid communityId);
     
-    public Task unsubscribeUser(string token, Guid communityId);
+    public Task UnsubscribeUser(string token, Guid communityId);
 }
