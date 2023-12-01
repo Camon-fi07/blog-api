@@ -63,7 +63,7 @@ public class CommunityService:ICommunityService
     {
         var user = await _tokenService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
-        if (userCommunity.UserRole != Role.Admin) throw new Exception("you don't have rights");
+        if (userCommunity == null || userCommunity.UserRole != Role.Admin) throw new Exception("you don't have rights");
         var userCommunitiesList = _db.UserCommunities.ToList();
         var community = userCommunity.Community;
         foreach (var subscriberCommunity in community.Subscribers)
@@ -99,20 +99,16 @@ public class CommunityService:ICommunityService
     public async Task<CommunityFullDto> GetCommunity(Guid id)
     {
         var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User).FirstOrDefaultAsync(c => c.Id==id);
-        var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).ToList();
-        List<UserDto> adminsDto = new List<UserDto>();
-        foreach (var admin in admins)
+        if (community == null) throw new Exception("there is not community with this Id");
+        var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).Select(a => new UserDto()
         {
-           adminsDto.Add(new UserDto()
-           {
-               Id = admin.User.Id,
-               createTime = admin.User.CreateTime,
-               Phone = admin.User.PhoneNumber,
-               FullName = admin.User.FullName,
-               Gender = admin.User.Gender,
-               Email = admin.User.Email
-           });
-        }
+            Id = a.User.Id,
+            createTime = a.User.CreateTime,
+            Phone = a.User.PhoneNumber,
+            FullName = a.User.FullName,
+            Gender = a.User.Gender,
+            Email = a.User.Email
+        }).ToList();
 
         return new CommunityFullDto()
         {
@@ -122,7 +118,7 @@ public class CommunityService:ICommunityService
             Name = community.Name,
             CreateTime = community.CreateTime,
             SubscribersCount = community.Subscribers.Count,
-            Administrators = adminsDto
+            Administrators = admins
         };
     }
 
@@ -149,6 +145,7 @@ public class CommunityService:ICommunityService
         var user = await _tokenService.GetUserByToken(token);
         var community = await GetCommunityById(communityId);
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
+        if (userCommunity == null) throw new Exception("user is not a subscriber of this group");
         var admins = community.Subscribers.Where(uc => uc.UserRole == Role.Admin).ToList();
         if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await DeleteCommunity(token, communityId);}
         else
