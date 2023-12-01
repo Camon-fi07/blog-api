@@ -3,8 +3,9 @@ using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Enums;
 using weblog_API.Models.Community;
+using weblog_API.Services.IServices;
 
-namespace weblog_API.Services.IServices;
+namespace weblog_API.Services;
 
 public class CommunityService:ICommunityService
 {
@@ -166,8 +167,16 @@ public class CommunityService:ICommunityService
         return userCommunity == null ? null : Enum.GetName(typeof(Role), userCommunity.UserRole);
     }
 
-    public Task<List<CommunityUserDto>> GetUserCommunityList(string token)
+    public async Task<List<CommunityUserDto>> GetUserCommunityList(string token)
     {
-        throw new NotImplementedException();
+        var user = await _tokenService.GetUserByToken(token);
+        var communities = user.Communities.OrderBy(uc => uc.UserRole).Select(c => new CommunityUserDto()
+        {
+            CommunityId = c.CommunityId,
+            UserId = c.UserId,
+            Role = Enum.GetName(typeof(Role), c.UserRole)
+        }).ToList();
+
+        return communities;
     }
 }

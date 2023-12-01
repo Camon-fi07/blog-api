@@ -117,4 +117,20 @@ public class CommunityController : Controller
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("my")]
+    public async Task<ActionResult<List<CommunityUserDto>>> GetUserCommunitites()
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        try
+        {
+            var communities = await _communityService.GetUserCommunityList(token.Substring("Bearer ".Length));
+            return Ok(communities);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
 }
