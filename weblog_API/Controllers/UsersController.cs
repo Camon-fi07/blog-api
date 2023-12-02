@@ -19,8 +19,6 @@ public class UsersController : Controller
     [HttpPost("register")]
     public async Task<ActionResult<TokenModel>> Register([FromBody] UserRegister userRegister)
     {
-        var isUserUnique = await _userService.isUniqueUser(userRegister.Email);
-        if (!isUserUnique) return BadRequest(new { message = "There is already a user with this email " });
         var token = await _userService.Registration(userRegister);
         return Ok(token);
     }

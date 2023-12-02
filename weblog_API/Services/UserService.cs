@@ -35,6 +35,8 @@ public class UserService:IUserService
     
     public async Task<TokenModel> Registration(UserRegister registrationRequest)
     {
+        var isUserUnique = await isUniqueUser(registrationRequest.Email);
+        if (!isUserUnique) throw new CustomException("There is already a user with this email", 400 );
         User user = new()
         {
             Email = registrationRequest.Email,
