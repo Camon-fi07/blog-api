@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
+using weblog_API.Middlewares;
 using weblog_API.Models;
 using weblog_API.Services;
 using weblog_API.Services.IServices;
@@ -42,6 +44,15 @@ builder.Services.AddAuthentication(x =>
         ValidateLifetime = true,
         ValidAudience = tokenProperties.Audience,
         ValidateAudience = true
+    };
+    x.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            var token = context.SecurityToken as JwtSecurityToken;
+            context.Request.Headers["Authorization"] = token.RawData;
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -89,5 +100,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ErrorsHandling>();
 
 app.Run();

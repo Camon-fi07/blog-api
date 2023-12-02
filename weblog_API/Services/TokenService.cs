@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
+using weblog_API.Middlewares;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -25,12 +26,12 @@ public class TokenService:ITokenService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        if (!tokenHandler.CanReadToken(token)) throw new Exception("Invalid token");
+        if (!tokenHandler.CanReadToken(token)) throw new CustomException("Invalid token", 401);
         
         var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
         
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
-        if(userId == null) throw new Exception("Invalid token");
+        if(userId == null) throw new CustomException("Invalid token", 401);
             
         return userId;
     }
@@ -63,14 +64,14 @@ public class TokenService:ITokenService
     {
         try
         {
-            if (await IsTokenBanned(token)) throw new Exception("token is banned");
+            if (await IsTokenBanned(token)) throw new CustomException("Token is banned", 401);
             var userId = getIdByToken(token);
 
             var user = await _db.Users.Include(u => u.Communities).ThenInclude(uc => uc.Community).FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-            if(user == null) throw new Exception("Can't find user");
+            if(user == null) throw new CustomException("Can't find user", 401);
             return user;
         }
-        catch(Exception)
+        catch(CustomException)
         {
             throw;
         }
