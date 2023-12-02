@@ -29,7 +29,6 @@ public class UsersController : Controller
     public async Task<ActionResult<TokenModel>> Login([FromBody] LoginCredentials loginCredentials)
     {
         var token = await _userService.Login(loginCredentials);
-        if (token.Token.Length == 0) return BadRequest(new { message = "Invalid login or password" });
         return Ok(token);
     }
 
@@ -38,16 +37,8 @@ public class UsersController : Controller
     public async Task<ActionResult<UserDto>> Profile()
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        if (token == null) return Unauthorized(new {message = "Invalid token"});
-        try
-        {
-            var user = await _userService.GetUser(token.Substring("Bearer ".Length));
-            return Ok(user);
-        }
-        catch(Exception err)
-        {
-            return BadRequest(new {message = err.Message});
-        }
+        var user = await _userService.GetUser(token);
+        return Ok(user);
         
     }
 
@@ -56,16 +47,8 @@ public class UsersController : Controller
     public async Task<IActionResult> EditProfile([FromBody] UserEdit userEdit)
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        if (token == null) return Unauthorized(new {message = "Invalid token"});
-        try
-        {
-            await _userService.Edit(userEdit, token.Substring("Bearer ".Length));
-            return Ok();
-        }
-        catch(Exception err)
-        {
-            return BadRequest(new {message = err.Message});
-        }
+        await _userService.Edit(userEdit, token);
+        return Ok();
     }
     
     [HttpPost("logout")]
@@ -73,15 +56,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Logout()
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        if (token == null) return Unauthorized(new {message = "Invalid token"});
-        try
-        {
-            await _userService.Logout(token.Substring("Bearer ".Length));
-            return Ok();
-        }
-        catch(Exception err)
-        {
-            return BadRequest(new {message = err.Message});
-        }
+        await _userService.Logout(token);
+        return Ok();
     }
 }

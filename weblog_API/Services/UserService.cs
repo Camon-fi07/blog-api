@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Middlewares;
 using weblog_API.Models;
 using weblog_API.Models.Community;
 using weblog_API.Models.User;
@@ -54,13 +55,7 @@ public class UserService:IUserService
     public async Task<TokenModel> Login(LoginCredentials loginRequest)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
-        if (user == null)
-        {
-            return new TokenModel()
-            {
-                Token = ""
-            };
-        }
+        if (user == null) throw new CustomException("Invalid email or password", 401);
 
         if (BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
@@ -90,7 +85,7 @@ public class UserService:IUserService
                 Phone = user.PhoneNumber
             };
         }
-        catch (Exception)
+        catch (CustomException)
         {
             throw;
         }
@@ -109,7 +104,7 @@ public class UserService:IUserService
             user.FullName = userEdit.FullName;
             await _db.SaveChangesAsync();
         }
-        catch (Exception)
+        catch (CustomException)
         {
             throw;
         }
@@ -117,7 +112,7 @@ public class UserService:IUserService
 
     public async Task Logout(string token)
     {
-        if (await _db.BannedTokens.AnyAsync(t => t.Token == token)) throw new Exception("token has already banned");
+        if (await _tokenService.IsTokenBanned(token)) throw new CustomException("Token has already banned", 401);
         _db.BannedTokens.Add(new TokenModel{Token = token});
         await _db.SaveChangesAsync();
     }
