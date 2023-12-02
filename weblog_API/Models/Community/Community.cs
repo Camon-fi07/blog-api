@@ -8,4 +8,5 @@ public class Community
     public string Description { get; set; }
     public Boolean IsClosed { get; set; }
     public List<UserCommunity> Subscribers { get; set; }
+    public List<Post.Post> Posts { get; set; }
 }

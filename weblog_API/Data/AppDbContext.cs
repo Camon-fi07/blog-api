@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Models;
+using weblog_API.Models.Comment;
 using weblog_API.Models.Community;
+using weblog_API.Models.Post;
 using weblog_API.Models.Tags;
 using weblog_API.Models.User;
 
@@ -18,6 +20,9 @@ public class AppDbContext:DbContext
     public DbSet<UserCommunity> UserCommunities { get; set; }
     public DbSet<TokenModel> BannedTokens { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserCommunity>()
@@ -32,6 +37,32 @@ public class AppDbContext:DbContext
             .HasOne(uc => uc.Community)
             .WithMany(c => c.Subscribers)
             .HasForeignKey(uc => uc.CommunityId);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Posts)
+            .WithOne(p => p.Author);
+
+        modelBuilder.Entity<Post>()
+            .HasMany(p => p.UsersLiked)
+            .WithMany(u => u.LikedPosts)
+            .UsingEntity("Likes");
+
+        modelBuilder.Entity<Post>()
+            .HasMany(p => p.Tags)
+            .WithMany(t => t.Posts)
+            .UsingEntity("PostTag");
+
+        modelBuilder.Entity<Community>()
+            .HasMany(c => c.Posts)
+            .WithOne(p => p.Community);
+
+        modelBuilder.Entity<Post>()
+            .HasMany(p => p.Comments)
+            .WithOne(c => c.Post);
+
+        modelBuilder.Entity<Comment>()
+            .HasMany(c => c.SubComments)
+            .WithOne(c => c.ParentComment);
         
         
         modelBuilder.Entity<Tag>().HasData(

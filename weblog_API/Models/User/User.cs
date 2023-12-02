@@ -14,4 +14,6 @@ public class User
     public string PhoneNumber { get; set; }
     public DateTime CreateTime { get; set; }
     public List<UserCommunity> Communities { get; set; }
+    public List<Post.Post> Posts { get; set; }
+    public List<Post.Post> LikedPosts { get; set; }
 }
