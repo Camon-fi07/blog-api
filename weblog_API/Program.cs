@@ -23,6 +23,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ICommunityService, CommunityService>();
+builder.Services.AddScoped<ITagsService, TagsService>();
 
 TokenProperties tokenProperties = new();
 builder.Configuration.GetSection(nameof(TokenProperties)).Bind(tokenProperties);
