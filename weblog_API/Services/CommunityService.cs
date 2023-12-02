@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Enums;
+using weblog_API.Middlewares;
 using weblog_API.Models.Community;
 using weblog_API.Services.IServices;
 
@@ -19,17 +20,10 @@ public class CommunityService:ICommunityService
 
     private async Task<Community> GetCommunityById(Guid Id)
     {
-        try
-        {
-            var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User)
-                .FirstOrDefaultAsync(c => c.Id == Id);
-            if (community == null) throw new Exception("invalid id");
-            return community;
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User)
+            .FirstOrDefaultAsync(c => c.Id == Id);
+        if (community == null) throw new CustomException("Invalid id", 400);
+        return community;
     }
     
     public async Task CreateCommunity(CreateCommunityDto communityInfo, string token)
@@ -63,14 +57,14 @@ public class CommunityService:ICommunityService
     {
         var user = await _tokenService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
-        if (userCommunity == null || userCommunity.UserRole != Role.Admin) throw new Exception("you don't have rights");
-        var userCommunitiesList = _db.UserCommunities.ToList();
+        if (userCommunity == null || userCommunity.UserRole != Role.Admin) throw new CustomException("You don't have rights", 403);
+        var userCommunitiesList = _db.UserCommunities.Include(uc => uc.User).ToList();
         var community = userCommunity.Community;
-        foreach (var subscriberCommunity in community.Subscribers)
+        foreach (var sc in community.Subscribers)
         {
-            var subscriber = subscriberCommunity.User;
-            user.Communities.Remove(subscriberCommunity);
-            userCommunitiesList.Remove(subscriberCommunity);
+            var subscriber = sc.User;
+            subscriber.Communities.Remove(sc);
+            userCommunitiesList.Remove(sc);
         }
         _db.Communities.Remove(community);
         await _db.SaveChangesAsync();
@@ -78,28 +72,21 @@ public class CommunityService:ICommunityService
 
     public List<CommunityDto> GetCommunityList()
     {
-        var communities = _db.Communities.Include(c => c.Subscribers).ToList();
-        List<CommunityDto> communityDtos = new List<CommunityDto>();
-        foreach (var community in communities)
+        var communities = _db.Communities.Include(c => c.Subscribers).Select(c => new CommunityDto()
         {
-            communityDtos.Add(new CommunityDto()
-            {
-                Id = community.Id,
-                Description = community.Description,
-                IsClosed = community.IsClosed,
-                Name = community.Name,
-                CreateTime = community.CreateTime,
-                SubscribersCount = community.Subscribers.Count
-            });
-        }
-
-        return communityDtos;
+            Id = c.Id,
+            Description = c.Description,
+            IsClosed = c.IsClosed,
+            Name = c.Name,
+            CreateTime = c.CreateTime,
+            SubscribersCount = c.Subscribers.Count
+        }).ToList();
+        return communities;
     }
 
     public async Task<CommunityFullDto> GetCommunity(Guid id)
     {
-        var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User).FirstOrDefaultAsync(c => c.Id==id);
-        if (community == null) throw new Exception("there is not community with this Id");
+        var community = await GetCommunityById(id);
         var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).Select(a => new UserDto()
         {
             Id = a.User.Id,
@@ -126,6 +113,7 @@ public class CommunityService:ICommunityService
     {
         var user = await _tokenService.GetUserByToken(token);
         var community = await GetCommunityById(communityId);
+        if (community.Subscribers.Any(s => s.UserId == user.Id)) throw new CustomException("User is already a subscriber", 400);
         UserCommunity userCommunity = new UserCommunity()
         {
             User = user,
@@ -145,7 +133,7 @@ public class CommunityService:ICommunityService
         var user = await _tokenService.GetUserByToken(token);
         var community = await GetCommunityById(communityId);
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
-        if (userCommunity == null) throw new Exception("user is not a subscriber of this group");
+        if (userCommunity == null) throw new CustomException("User is not a subscriber of this group", 403);
         var admins = community.Subscribers.Where(uc => uc.UserRole == Role.Admin).ToList();
         if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await DeleteCommunity(token, communityId);}
         else
