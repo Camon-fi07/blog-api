@@ -6,6 +6,7 @@ public class Comment
 {
     [Key]
     public Guid Id { get; set; }
+    public string Content { get; set; }
     public Comment? ParentComment { get; set; }
     public DateTime? ModifiedDate { get; set; }
     public DateTime? DeleteDate { get; set; }
