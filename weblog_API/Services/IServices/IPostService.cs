@@ -1,11 +1,12 @@
 using weblog_API.Data.Dto;
+using weblog_API.Enums;
 
 namespace weblog_API.Services.IServices;
 
 public interface IPostService
 {
-    public Task<List<PostDto>> GetPosts(string tag, string author, int minReadingTime, int maxReadingTime, string sorting,
-        bool onlyMyCommunities, int page, int size);
+    public Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        bool onlyMyCommunities, int page, int size, string? token);
 
     public Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId);
 

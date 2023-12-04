@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
+using weblog_API.Enums;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
@@ -28,5 +29,32 @@ public class PostController : Controller
         string token = HttpContext.Request.Headers["Authorization"];
         var post = await _postService.GetConcretePost(id, token);
         return Ok(post);
+    }    
+    
+    [HttpGet("")]
+    public async Task<ActionResult<List<PostDto>>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting, bool onlyMyCommunities,
+        int page, int size)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        var posts = await _postService.GetPosts(tags,  author,  minReadingTime,  maxReadingTime,  sorting,  onlyMyCommunities,
+             page,  size,token);
+        return Ok(posts);
+    }    
+    
+    [HttpPost("like")]
+    [Authorize]
+    public async Task<ActionResult<PostFullDto>> SetLike(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        await _postService.AddLike(token,id);
+        return Ok();
+    }    
+    [HttpDelete("like")]
+    [Authorize]
+    public async Task<ActionResult<PostFullDto>> DeleteLike(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        await _postService.DeleteLike(token,id);
+        return Ok();
     }    
 }
