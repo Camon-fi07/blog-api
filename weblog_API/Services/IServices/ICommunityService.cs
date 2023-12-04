@@ -1,9 +1,11 @@
 using weblog_API.Data.Dto;
+using weblog_API.Models.Community;
 
 namespace weblog_API.Services.IServices;
 
 public interface ICommunityService
 {
+    public Task<Community> GetCommunityById(Guid Id);
     public Task CreateCommunity(CreateCommunityDto communityInfo,string token);
 
     public Task DeleteCommunity(string token, Guid communityId);

@@ -9,6 +9,7 @@ using weblog_API.Data.Dto;
 using weblog_API.Middlewares;
 using weblog_API.Models;
 using weblog_API.Models.Community;
+using weblog_API.Models.Post;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -47,7 +48,9 @@ public class UserService:IUserService
             PhoneNumber = registrationRequest.PhoneNumber,
             CreateTime = DateTime.UtcNow,
             Id = Guid.NewGuid(),
-            Communities = new List<UserCommunity>()
+            Communities = new List<UserCommunity>(),
+            Posts = new List<Post>(),
+            LikedPosts = new List<Post>()
         };
         _db.Users.Add(user);
         await _db.SaveChangesAsync();

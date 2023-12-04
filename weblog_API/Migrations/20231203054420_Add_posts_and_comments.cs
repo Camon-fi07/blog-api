@@ -180,16 +180,16 @@ namespace weblog_API.Migrations
                 columns: new[] { "Id", "CreateTime", "Name" },
                 values: new object[,]
                 {
-                    { new Guid("09d1f148-7738-4b12-b3dc-50055c6c6bed"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7436), "it" },
-                    { new Guid("1b1e7268-21fa-494a-9bd7-c3f4241172cc"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7440), "теория_заговора" },
-                    { new Guid("36c03030-9d64-434f-b587-a1a5b4f91283"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7430), "еда" },
-                    { new Guid("7bf8179f-f014-49ff-aa3c-e67d67bf4842"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7456), "косплей" },
-                    { new Guid("7f275b82-4964-49ac-a988-42f5e955cd3a"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7454), "соцсети" },
-                    { new Guid("98fde087-83b5-477b-94a2-673966aa3987"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7438), "интернет" },
-                    { new Guid("9b38ee20-0c0c-4b78-8f05-e8be6a9dd5c2"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7434), "приколы" },
-                    { new Guid("c4ecf99f-6255-4392-8b4c-f38598bfcde8"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7432), "18+" },
-                    { new Guid("ca01652d-b566-4f3b-a792-3f821f8ed413"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7426), "история" },
-                    { new Guid("f70859a7-8ba5-4be7-8315-d24279e3a50f"), new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7458), "преступление" }
+                    { new Guid("0a9cc0e7-4674-46a5-99d5-39ff974e9ad8"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(817), "еда" },
+                    { new Guid("178ec05c-a831-4244-b55b-b68a135d3a34"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(881), "приколы" },
+                    { new Guid("5a0322be-2d5c-47b7-9fcf-f277145a01d3"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(902), "теория_заговора" },
+                    { new Guid("77c53869-ffab-42da-afe3-d7ea61ef3b17"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(907), "косплей" },
+                    { new Guid("7d0aa767-ad15-4539-80a7-0444045d4cab"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(812), "история" },
+                    { new Guid("8989e85a-1844-4de6-bf2c-e2027c72d351"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(905), "соцсети" },
+                    { new Guid("b3325476-f7f5-4dcd-a5a0-2585f991aa03"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(900), "интернет" },
+                    { new Guid("cd85ec5e-5455-46dd-950b-fef25ddd9098"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(884), "it" },
+                    { new Guid("f2766be0-1d7c-4040-8ed9-131b1654251b"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(910), "преступление" },
+                    { new Guid("fe8b52d3-5789-4b74-8244-5dcd478d89a8"), new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(820), "18+" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -246,52 +246,52 @@ namespace weblog_API.Migrations
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("09d1f148-7738-4b12-b3dc-50055c6c6bed"));
+                keyValue: new Guid("0a9cc0e7-4674-46a5-99d5-39ff974e9ad8"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("1b1e7268-21fa-494a-9bd7-c3f4241172cc"));
+                keyValue: new Guid("178ec05c-a831-4244-b55b-b68a135d3a34"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("36c03030-9d64-434f-b587-a1a5b4f91283"));
+                keyValue: new Guid("5a0322be-2d5c-47b7-9fcf-f277145a01d3"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("7bf8179f-f014-49ff-aa3c-e67d67bf4842"));
+                keyValue: new Guid("77c53869-ffab-42da-afe3-d7ea61ef3b17"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("7f275b82-4964-49ac-a988-42f5e955cd3a"));
+                keyValue: new Guid("7d0aa767-ad15-4539-80a7-0444045d4cab"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("98fde087-83b5-477b-94a2-673966aa3987"));
+                keyValue: new Guid("8989e85a-1844-4de6-bf2c-e2027c72d351"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("9b38ee20-0c0c-4b78-8f05-e8be6a9dd5c2"));
+                keyValue: new Guid("b3325476-f7f5-4dcd-a5a0-2585f991aa03"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("c4ecf99f-6255-4392-8b4c-f38598bfcde8"));
+                keyValue: new Guid("cd85ec5e-5455-46dd-950b-fef25ddd9098"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("ca01652d-b566-4f3b-a792-3f821f8ed413"));
+                keyValue: new Guid("f2766be0-1d7c-4040-8ed9-131b1654251b"));
 
             migrationBuilder.DeleteData(
                 table: "Tags",
                 keyColumn: "Id",
-                keyValue: new Guid("f70859a7-8ba5-4be7-8315-d24279e3a50f"));
+                keyValue: new Guid("fe8b52d3-5789-4b74-8244-5dcd478d89a8"));
 
             migrationBuilder.InsertData(
                 table: "Tags",

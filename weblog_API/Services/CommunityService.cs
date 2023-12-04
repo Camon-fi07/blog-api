@@ -18,7 +18,7 @@ public class CommunityService:ICommunityService
         _tokenService = tokenService;
     }
 
-    private async Task<Community> GetCommunityById(Guid Id)
+    public async Task<Community> GetCommunityById(Guid Id)
     {
         var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User)
             .FirstOrDefaultAsync(c => c.Id == Id);

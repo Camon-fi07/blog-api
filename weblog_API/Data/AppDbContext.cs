@@ -47,11 +47,6 @@ public class AppDbContext:DbContext
             .WithMany(u => u.LikedPosts)
             .UsingEntity("Likes");
 
-        modelBuilder.Entity<Post>()
-            .HasMany(p => p.Tags)
-            .WithMany(t => t.Posts)
-            .UsingEntity("PostTag");
-
         modelBuilder.Entity<Community>()
             .HasMany(c => c.Posts)
             .WithOne(p => p.Community);
@@ -66,16 +61,16 @@ public class AppDbContext:DbContext
         
         
         modelBuilder.Entity<Tag>().HasData(
-            new Tag { Id = Guid.NewGuid(), Name = "история", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "еда", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "18+", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "приколы", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "it", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "интернет", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "теория_заговора", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "соцсети", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "косплей", CreateTime = DateTime.UtcNow },
-            new Tag { Id = Guid.NewGuid(), Name = "преступление", CreateTime = DateTime.UtcNow }
+            new Tag { Id = Guid.NewGuid(), Name = "история", CreateTime = DateTime.UtcNow, Posts = new List<Post>()},
+            new Tag { Id = Guid.NewGuid(), Name = "еда", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "18+", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "приколы", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "it", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "интернет", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "теория_заговора", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "соцсети", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "косплей", CreateTime = DateTime.UtcNow, Posts = new List<Post>() },
+            new Tag { Id = Guid.NewGuid(), Name = "преступление", CreateTime = DateTime.UtcNow, Posts = new List<Post>() }
         );
     }
 }

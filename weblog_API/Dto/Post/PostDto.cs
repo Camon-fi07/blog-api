@@ -18,5 +18,5 @@ public class PostDto
     public int Likes { get; set; }
     public bool HasLike { get; set; }
     public int CommentsCount { get; set; }
-    public List<Tag> Tags { get; set; }
+    public List<TagDto> Tags { get; set; }
 }

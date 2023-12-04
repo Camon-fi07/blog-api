@@ -195,62 +195,62 @@ namespace weblog_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ca01652d-b566-4f3b-a792-3f821f8ed413"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7426),
+                            Id = new Guid("7d0aa767-ad15-4539-80a7-0444045d4cab"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(812),
                             Name = "история"
                         },
                         new
                         {
-                            Id = new Guid("36c03030-9d64-434f-b587-a1a5b4f91283"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7430),
+                            Id = new Guid("0a9cc0e7-4674-46a5-99d5-39ff974e9ad8"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(817),
                             Name = "еда"
                         },
                         new
                         {
-                            Id = new Guid("c4ecf99f-6255-4392-8b4c-f38598bfcde8"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7432),
+                            Id = new Guid("fe8b52d3-5789-4b74-8244-5dcd478d89a8"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(820),
                             Name = "18+"
                         },
                         new
                         {
-                            Id = new Guid("9b38ee20-0c0c-4b78-8f05-e8be6a9dd5c2"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7434),
+                            Id = new Guid("178ec05c-a831-4244-b55b-b68a135d3a34"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(881),
                             Name = "приколы"
                         },
                         new
                         {
-                            Id = new Guid("09d1f148-7738-4b12-b3dc-50055c6c6bed"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7436),
+                            Id = new Guid("cd85ec5e-5455-46dd-950b-fef25ddd9098"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(884),
                             Name = "it"
                         },
                         new
                         {
-                            Id = new Guid("98fde087-83b5-477b-94a2-673966aa3987"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7438),
+                            Id = new Guid("b3325476-f7f5-4dcd-a5a0-2585f991aa03"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(900),
                             Name = "интернет"
                         },
                         new
                         {
-                            Id = new Guid("1b1e7268-21fa-494a-9bd7-c3f4241172cc"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7440),
+                            Id = new Guid("5a0322be-2d5c-47b7-9fcf-f277145a01d3"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(902),
                             Name = "теория_заговора"
                         },
                         new
                         {
-                            Id = new Guid("7f275b82-4964-49ac-a988-42f5e955cd3a"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7454),
+                            Id = new Guid("8989e85a-1844-4de6-bf2c-e2027c72d351"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(905),
                             Name = "соцсети"
                         },
                         new
                         {
-                            Id = new Guid("7bf8179f-f014-49ff-aa3c-e67d67bf4842"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7456),
+                            Id = new Guid("77c53869-ffab-42da-afe3-d7ea61ef3b17"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(907),
                             Name = "косплей"
                         },
                         new
                         {
-                            Id = new Guid("f70859a7-8ba5-4be7-8315-d24279e3a50f"),
-                            CreateTime = new DateTime(2023, 12, 3, 3, 50, 23, 942, DateTimeKind.Utc).AddTicks(7458),
+                            Id = new Guid("f2766be0-1d7c-4040-8ed9-131b1654251b"),
+                            CreateTime = new DateTime(2023, 12, 3, 5, 44, 19, 884, DateTimeKind.Utc).AddTicks(910),
                             Name = "преступление"
                         });
                 });
