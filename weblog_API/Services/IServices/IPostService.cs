@@ -10,6 +10,10 @@ public interface IPostService
 
     public Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId);
 
+    public Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime,
+        int? maxReadingTime, PostSorting sorting,
+        int page, int size, string? token);
+
     public Task DeletePost(Guid id, string token);
 
     public Task<PostFullDto> GetConcretePost(Guid id, string? token);

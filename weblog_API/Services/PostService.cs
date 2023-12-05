@@ -89,6 +89,49 @@ public class PostService:IPostService
         await _db.SaveChangesAsync();
     }
 
+
+    public async Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        int page, int size, string? token)
+    {
+        var posts = GetAllPosts();
+        var user = await _tokenService.GetUserByToken(token);
+        var community = await _communityService.GetCommunityById(communityId);
+
+        if (user != null && community.IsClosed && !community.Subscribers.Any(uc => uc.User.Id == user.Id))
+            throw new CustomException("User is not a subscriber of this group", 403);
+        
+        var filterPosts = posts.Skip((page-1)*size).Take(size);
+        filterPosts = posts.Where(p => p.Community != null && p.Community.Id== communityId);
+        if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
+        if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
+        if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
+        if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
+        var sortPosts = SortPosts(sorting, filterPosts.ToList()).Select(post => new PostDto()
+        {
+            Id = post.Id,
+            Description = post.Description,
+            CreateTime = post.CreateTime,
+            AddressId = post.AddressId,
+            Image = post.Image,
+            AuthorId = post.Author.Id,
+            AuthorName = post.Author.FullName,
+            ReadingTime = post.ReadingTime,
+            Tags = post.Tags.Select(t => new TagDto()
+            {
+                Id = t.Id,
+                CreateTime = t.CreateTime,
+                Name = t.Name
+            }).ToList(),
+            CommunityId = post.Community?.Id,
+            CommunityName = post.Community?.Name,
+            Title = post.Title,
+            Likes = post.UsersLiked.Count,
+            CommentsCount = post.Comments.Count,
+            HasLike = user != null && post.UsersLiked.Any(u => u.Id == user.Id),
+        }).ToList();
+        return sortPosts;
+    }
+    
     public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token, bool onlyMyCommunities)
     {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
+using weblog_API.Enums;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
@@ -11,9 +12,11 @@ public class CommunityController : Controller
 {
     
     private readonly ICommunityService _communityService;
-    public CommunityController(ICommunityService communityService)
+    private readonly IPostService _postService;
+    public CommunityController(ICommunityService communityService, IPostService postService)
     {
         _communityService = communityService;
+        _postService = postService;
     }
     
     [HttpPost("create")]
@@ -36,6 +39,26 @@ public class CommunityController : Controller
         var community = await _communityService.GetCommunity(id);
         return Ok(community);
     }
+    
+    [HttpPost("{id:guid}/post")]
+    [Authorize]
+    public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto, Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        await _postService.CreatePost(createPostDto, token, id);
+        return Ok();
+    }
+    
+    [HttpGet("{id:guid}/post")]
+    public async Task<ActionResult<List<PostDto>>> GetPosts(Guid id, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        int page, int size)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        var posts = await _postService.GetCommunityPosts(id, tags,  author,  minReadingTime,  maxReadingTime,  sorting,
+            page, size, token);
+        return Ok(posts);
+    }    
+    
     
     [HttpGet("{id:guid}/role")]
     [Authorize]
