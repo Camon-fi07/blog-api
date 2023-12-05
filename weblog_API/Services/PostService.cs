@@ -137,23 +137,9 @@ public class PostService:IPostService
         
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         
-        var comments = post.Comments.Select(c => new CommentDto()
-        {
-            Id = c.Id,
-            CreateTime = c.CreateTime,
-            AuthorId = c.Author.Id,
-            AuthorName = c.Author.FullName,
-            DeleteDate = c.DeleteDate,
-            ModifiedDate = c.ModifiedDate,
-            SubComments = c.SubComments.Count
-        }).ToList();
+        var comments = post.Comments.Select(c => CommentMapper.CommentToCommentDto(c)).ToList();
         
-        var tags = post.Tags.Select(t => new TagDto()
-        {
-            Id = t.Id,
-            CreateTime = t.CreateTime,
-            Name = t.Name
-        }).ToList();
+        var tags = post.Tags.Select(t => TagMapper.TagToTagDto(t)).ToList();
         
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
