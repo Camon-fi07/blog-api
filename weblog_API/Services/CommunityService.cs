@@ -59,14 +59,14 @@ public class CommunityService:ICommunityService
         var user = await _tokenService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
         if (userCommunity == null || userCommunity.UserRole != Role.Admin) throw new CustomException("You don't have rights", 403);
-        var userCommunitiesList = _db.UserCommunities.Include(uc => uc.User).ToList();
         var community = userCommunity.Community;
-        foreach (var sc in community.Subscribers)
+        var posts = community.Posts;
+        foreach (var post in posts)
         {
-            var subscriber = sc.User;
-            subscriber.Communities.Remove(sc);
-            userCommunitiesList.Remove(sc);
+            _db.Posts.Remove(post);
+            _db.Entry(post).State = EntityState.Deleted;
         }
+        community.Subscribers.Clear();
         _db.Communities.Remove(community);
         await _db.SaveChangesAsync();
     }

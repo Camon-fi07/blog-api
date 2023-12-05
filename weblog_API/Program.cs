@@ -58,6 +58,7 @@ builder.Services.AddScoped<ICommunityService, CommunityService>();
 builder.Services.AddScoped<ITagsService, TagsService>();
 builder.Services.AddScoped<IPostService, PostService>();
 
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

@@ -56,6 +56,9 @@ public class PostService:IPostService
         var user = await _tokenService.GetUserByToken(token);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
+        if (community != null && !community.Subscribers.Any(uc => uc.UserId == user.Id))
+            throw new CustomException("User is not a subscriber of this community", 403);
+        
         var post = new Post()
         {
             Id = Guid.NewGuid(),
