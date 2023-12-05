@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Enums;
+using weblog_API.Mappers;
 using weblog_API.Middlewares;
 using weblog_API.Models.Community;
 using weblog_API.Services.IServices;
@@ -72,15 +73,8 @@ public class CommunityService:ICommunityService
 
     public List<CommunityDto> GetCommunityList()
     {
-        var communities = _db.Communities.Include(c => c.Subscribers).Select(c => new CommunityDto()
-        {
-            Id = c.Id,
-            Description = c.Description,
-            IsClosed = c.IsClosed,
-            Name = c.Name,
-            CreateTime = c.CreateTime,
-            SubscribersCount = c.Subscribers.Count
-        }).ToList();
+        var communities = _db.Communities.Include(c => c.Subscribers)
+            .Select(c => CommunityMapper.CommunityToCommunityDto(c)).ToList();
         return communities;
     }
 
@@ -97,16 +91,7 @@ public class CommunityService:ICommunityService
             Email = a.User.Email
         }).ToList();
 
-        return new CommunityFullDto()
-        {
-            Id = community.Id,
-            Description = community.Description,
-            IsClosed = community.IsClosed,
-            Name = community.Name,
-            CreateTime = community.CreateTime,
-            SubscribersCount = community.Subscribers.Count,
-            Administrators = admins
-        };
+        return CommunityMapper.CommunityToCommunityFullDto(community, admins);
     }
 
     public async Task SubscribeUser(string token, Guid communityId)
@@ -155,12 +140,8 @@ public class CommunityService:ICommunityService
     public async Task<List<CommunityUserDto>> GetUserCommunityList(string token)
     {
         var user = await _tokenService.GetUserByToken(token);
-        var communities = user.Communities.OrderBy(uc => uc.UserRole).Select(c => new CommunityUserDto()
-        {
-            CommunityId = c.CommunityId,
-            UserId = c.UserId,
-            Role = Enum.GetName(typeof(Role), c.UserRole)
-        }).ToList();
+        var communities = user.Communities.OrderBy(uc => uc.UserRole)
+            .Select(c => CommunityMapper.UserCommunityToCommunityUserDto(c)).ToList();
 
         return communities;
     }

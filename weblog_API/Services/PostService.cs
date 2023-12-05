@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
 using weblog_API.Enums;
+using weblog_API.Mappers;
 using weblog_API.Middlewares;
 using weblog_API.Models.Comment;
 using weblog_API.Models.Post;
@@ -107,29 +108,8 @@ public class PostService:IPostService
         if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
         if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
-        var sortPosts = SortPosts(sorting, filterPosts.ToList()).Select(post => new PostDto()
-        {
-            Id = post.Id,
-            Description = post.Description,
-            CreateTime = post.CreateTime,
-            AddressId = post.AddressId,
-            Image = post.Image,
-            AuthorId = post.Author.Id,
-            AuthorName = post.Author.FullName,
-            ReadingTime = post.ReadingTime,
-            Tags = post.Tags.Select(t => new TagDto()
-            {
-                Id = t.Id,
-                CreateTime = t.CreateTime,
-                Name = t.Name
-            }).ToList(),
-            CommunityId = post.Community?.Id,
-            CommunityName = post.Community?.Name,
-            Title = post.Title,
-            Likes = post.UsersLiked.Count,
-            CommentsCount = post.Comments.Count,
-            HasLike = user != null && post.UsersLiked.Any(u => u.Id == user.Id),
-        }).ToList();
+        var sortPosts = SortPosts(sorting, filterPosts.ToList())
+            .Select(p => PostMapper.PostToPostDto(p, user)).ToList();
         return sortPosts;
     }
     
@@ -146,29 +126,8 @@ public class PostService:IPostService
         if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime); 
         if(user != null && onlyMyCommunities) filterPosts = filterPosts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
-        var sortPosts = SortPosts(sorting, filterPosts.ToList()).Select(post => new PostDto()
-        {
-            Id = post.Id,
-            Description = post.Description,
-            CreateTime = post.CreateTime,
-            AddressId = post.AddressId,
-            Image = post.Image,
-            AuthorId = post.Author.Id,
-            AuthorName = post.Author.FullName,
-            ReadingTime = post.ReadingTime,
-            Tags = post.Tags.Select(t => new TagDto()
-            {
-                Id = t.Id,
-                CreateTime = t.CreateTime,
-                Name = t.Name
-            }).ToList(),
-            CommunityId = post.Community?.Id,
-            CommunityName = post.Community?.Name,
-            Title = post.Title,
-            Likes = post.UsersLiked.Count,
-            CommentsCount = post.Comments.Count,
-            HasLike = user != null && post.UsersLiked.Any(u => u.Id == user.Id),
-        }).ToList();
+        var sortPosts = SortPosts(sorting, filterPosts.ToList())
+            .Select(p => PostMapper.PostToPostDto(p, user)).ToList();
         return sortPosts;
     }
 
@@ -178,47 +137,14 @@ public class PostService:IPostService
         
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         
-        var comments = post.Comments.Select(c => new CommentDto()
-        {
-            Id = c.Id,
-            CreateTime = c.CreateTime,
-            AuthorId = c.Author.Id,
-            AuthorName = c.Author.FullName,
-            DeleteDate = c.DeleteDate,
-            ModifiedDate = c.ModifiedDate,
-            SubComments = c.SubComments.Count
-        }).ToList();
+        var comments = post.Comments.Select(c => CommentMapper.CommentToCommentDto(c)).ToList();
         
-        var tags = post.Tags.Select(t => new TagDto()
-        {
-            Id = t.Id,
-            CreateTime = t.CreateTime,
-            Name = t.Name
-        }).ToList();
+        var tags = post.Tags.Select(t => TagMapper.TagToTagDto(t)).ToList();
         
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
-
-        var postDto = new PostFullDto()
-        {
-            Id = post.Id,
-            Description = post.Description,
-            CreateTime = post.CreateTime,
-            Comments = comments,
-            AddressId = post.AddressId,
-            Image = post.Image,
-            AuthorId = post.Author.Id,
-            AuthorName = post.Author.FullName,
-            ReadingTime = post.ReadingTime,
-            Tags = tags,
-            CommunityId = post.Community?.Id,
-            CommunityName = post.Community?.Name,
-            Title = post.Title,
-            Likes = post.UsersLiked.Count,
-            CommentsCount = comments.Count,
-            HasLike = user != null && post.UsersLiked.Any(u => u.Id == user.Id),
-        };
-        return postDto;
+        
+        return PostMapper.PostToPostFullDto(post, user, tags, comments);
     }
 
     public async Task AddLike(string token, Guid id)

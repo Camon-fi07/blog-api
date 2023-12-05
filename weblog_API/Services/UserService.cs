@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Mappers;
 using weblog_API.Middlewares;
 using weblog_API.Models;
 using weblog_API.Models.Community;
@@ -80,15 +81,7 @@ public class UserService:IUserService
         try
         {
             var user = await _tokenService.GetUserByToken(token);
-            return new UserDto()
-            {
-                Email = user.Email,
-                Gender = user.Gender,
-                FullName = user.FullName,
-                Id = user.Id,
-                createTime = user.CreateTime,
-                Phone = user.PhoneNumber
-            };
+            return UserMapper.UserToUserDto(user);
         }
         catch (CustomException)
         {
