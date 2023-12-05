@@ -6,9 +6,11 @@ namespace weblog_API.Services.IServices;
 public interface IPostService
 {
     public Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
-        bool onlyMyCommunities, int page, int size, string? token);
+         int page, int size, string? token, bool onlyMyCommunities);
 
     public Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId);
+
+    public Task DeletePost(Guid id, string token);
 
     public Task<PostFullDto> GetConcretePost(Guid id, string? token);
 

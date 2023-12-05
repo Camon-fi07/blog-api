@@ -5,7 +5,6 @@ using weblog_API.Enums;
 using weblog_API.Middlewares;
 using weblog_API.Models.Comment;
 using weblog_API.Models.Post;
-using weblog_API.Models.Tags;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -23,6 +22,17 @@ public class PostService:IPostService
         _communityService = communityService;
     }
 
+    private  IQueryable<Post> GetAllPosts()
+    {
+        var posts = _db.Posts
+            .Include(post => post.Comments).ThenInclude(comment => comment.Author)
+            .Include(post => post.Comments).ThenInclude(comment => comment.SubComments)
+            .Include(post => post.Tags)
+            .Include(post => post.Community)
+            .Include(post => post.UsersLiked)
+            .Include(post => post.Author);
+        return posts;
+    }
 
     private List<Post> SortPosts(PostSorting sorting, List<Post> posts)
     {
@@ -60,24 +70,30 @@ public class PostService:IPostService
             Image = createPostDto.Image,
             Community = community
         };
-        _db.Entry(post).State = EntityState.Added;
         posts.Add(post);
-        user.Posts.Add(post);
-        community?.Posts.Add(post);
+        _db.Entry(post).State = EntityState.Added;
         await _db.SaveChangesAsync();
     }
-    
-    public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting, bool onlyMyCommunities,
-        int page, int size, string? token)
+
+    public async Task DeletePost(Guid id, string token)
+    {
+        var posts = GetAllPosts().ToList();
+        var post = posts.FirstOrDefault(p => p.Id == id);
+        if (post == null) throw new CustomException("There is not a post with this Id", 400);
+        var user = await _tokenService.GetUserByToken(token);
+        var testUser = _db.Users.Include(u => u.Posts).ToList();
+        var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == post.Community?.Id);
+        if (post.Author.Id != user.Id && userCommunity?.UserRole != Role.Admin) throw new CustomException("User don't have access to this post", 403);
+        posts.Remove(post);
+        _db.Entry(post).State = EntityState.Deleted;
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        int page, int size, string? token, bool onlyMyCommunities)
     {
         var user = token == null ? null : await _tokenService.GetUserByToken(token);
-        var posts = _db.Posts
-            .Include(post => post.Comments).ThenInclude(comment => comment.Author)
-            .Include(post => post.Comments).ThenInclude(comment => comment.SubComments)
-            .Include(post => post.Tags)
-            .Include(post => post.Community)
-            .Include(post => post.UsersLiked)
-            .Include(post => post.Author);
+        var posts = GetAllPosts();
         
         var filterPosts = posts.Skip((page-1)*size).Take(size);
         if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
@@ -113,14 +129,7 @@ public class PostService:IPostService
 
     public async Task<PostFullDto> GetConcretePost(Guid id, string? token)
     {
-        var post = await _db.Posts
-            .Include(post => post.Comments).ThenInclude(comment => comment.Author)
-            .Include(post => post.Comments).ThenInclude(comment => comment.SubComments)
-            .Include(post => post.Tags)
-            .Include(post => post.Community)
-            .Include(post => post.UsersLiked)
-            .Include(post => post.Author)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var post = await GetAllPosts().FirstOrDefaultAsync(p => p.Id == id);
         
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         

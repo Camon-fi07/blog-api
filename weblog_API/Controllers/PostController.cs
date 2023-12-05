@@ -23,6 +23,16 @@ public class PostController : Controller
         await _postService.CreatePost(createPostDto, token, null);
         return Ok();
     }    
+    
+    [HttpDelete("delete")]
+    [Authorize]
+    public async Task<IActionResult> DeletePost(Guid id)
+    {
+        string token = HttpContext.Request.Headers["Authorization"];
+        await _postService.DeletePost(id, token);
+        return Ok();
+    }    
+    
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PostFullDto>> GetPost(Guid id)
     {
@@ -32,12 +42,12 @@ public class PostController : Controller
     }    
     
     [HttpGet("")]
-    public async Task<ActionResult<List<PostDto>>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting, bool onlyMyCommunities,
-        int page, int size)
+    public async Task<ActionResult<List<PostDto>>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        int page, int size, bool onlyMyCommunities=false)
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        var posts = await _postService.GetPosts(tags,  author,  minReadingTime,  maxReadingTime,  sorting,  onlyMyCommunities,
-             page,  size,token);
+        var posts = await _postService.GetPosts(tags,  author,  minReadingTime,  maxReadingTime,  sorting,
+             page,  size,token, onlyMyCommunities);
         return Ok(posts);
     }    
     
