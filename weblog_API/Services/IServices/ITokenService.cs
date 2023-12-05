@@ -9,5 +9,7 @@ public interface ITokenService
     public Task<bool> IsTokenBanned(string token);
 
     public Task<User> GetUserByToken(string token);
-    
+
+    public bool ValidateToken(string? token);
+
 }

@@ -94,7 +94,8 @@ public class PostService:IPostService
         int page, int size, string? token)
     {
         var posts = GetAllPosts();
-        var user = await _tokenService.GetUserByToken(token);
+        User? user = null;
+        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
         var community = await _communityService.GetCommunityById(communityId);
 
         if (user != null && community.IsClosed && !community.Subscribers.Any(uc => uc.User.Id == user.Id))
@@ -135,7 +136,8 @@ public class PostService:IPostService
     public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token, bool onlyMyCommunities)
     {
-        var user = token == null ? null : await _tokenService.GetUserByToken(token);
+        User? user = null;
+        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
         var posts = GetAllPosts();
         
         var filterPosts = posts.Skip((page-1)*size).Take(size);
@@ -194,7 +196,8 @@ public class PostService:IPostService
             Name = t.Name
         }).ToList();
         
-        var user = token == null ? null : await _tokenService.GetUserByToken(token);
+        User? user = null;
+        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
 
         var postDto = new PostFullDto()
         {

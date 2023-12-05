@@ -15,20 +15,32 @@ public class TokenService:ITokenService
 {
     private readonly AppDbContext _db;
     private TokenProperties _tokenProperties;
+    private JwtSecurityTokenHandler _tokenHandler;
+    private readonly TokenValidationParameters _tokenValidationParameters;
     public TokenService(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
         _tokenProperties = new TokenProperties();
         configuration.GetSection(nameof(TokenProperties)).Bind(_tokenProperties);
+        _tokenHandler = new JwtSecurityTokenHandler();
+        _tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_tokenProperties.Secrets)),
+            ValidIssuer = _tokenProperties.Issuer,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidAudience = _tokenProperties.Audience,
+            ValidateAudience = true
+        };
+        ;
     }
     
     private string getIdByToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        if (!tokenHandler.CanReadToken(token)) throw new CustomException("Invalid token", 401);
+        if (!_tokenHandler.CanReadToken(token)) throw new CustomException("Invalid token", 401);
         
-        var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+        var jwtToken = _tokenHandler.ReadToken(token) as JwtSecurityToken;
         
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
         if(userId == null) throw new CustomException("Invalid token", 401);
@@ -38,7 +50,6 @@ public class TokenService:ITokenService
     
     public string CreateToken(User user)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_tokenProperties.Secrets);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -51,13 +62,26 @@ public class TokenService:ITokenService
             Issuer = _tokenProperties.Issuer,
             Audience = _tokenProperties.Audience
         };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        var token = _tokenHandler.CreateToken(tokenDescriptor);
+        return _tokenHandler.WriteToken(token);
     }
     
     public async Task<bool> IsTokenBanned(string token)
     {
         return await _db.BannedTokens.AnyAsync(t => t.Token == token);
+    }
+
+    public bool ValidateToken(string? token)
+    {
+        try
+        {
+            _tokenHandler.ValidateToken(token,_tokenValidationParameters, out _);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
     
     public async Task<User> GetUserByToken(string token)

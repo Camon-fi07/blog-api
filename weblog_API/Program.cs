@@ -19,13 +19,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDbContext<AddressDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAddressService, AddressService>();
-builder.Services.AddScoped<ICommunityService, CommunityService>();
-builder.Services.AddScoped<ITagsService, TagsService>();
-builder.Services.AddScoped<IPostService, PostService>();
-
 TokenProperties tokenProperties = new();
 builder.Configuration.GetSection(nameof(TokenProperties)).Bind(tokenProperties);
 
@@ -58,6 +51,12 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICommunityService, CommunityService>();
+builder.Services.AddScoped<ITagsService, TagsService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddControllers();
 
