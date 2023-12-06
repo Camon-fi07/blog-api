@@ -12,11 +12,13 @@ namespace weblog_API.Services;
 public class CommunityService:ICommunityService
 {
     private readonly AppDbContext _db;
-    private ITokenService _tokenService;
-    public CommunityService(AppDbContext db, ITokenService tokenService)
+    private readonly ITokenService _tokenService;
+    private readonly IUserService _userService;
+    public CommunityService(AppDbContext db, ITokenService tokenService, IUserService userService)
     {
         _db = db;
         _tokenService = tokenService;
+        _userService = userService;
     }
 
     public async Task<Community> GetCommunityById(Guid Id)
@@ -29,7 +31,7 @@ public class CommunityService:ICommunityService
     
     public async Task CreateCommunity(CreateCommunityDto communityInfo, string token)
     {
-        var creator = await _tokenService.GetUserByToken(token);
+        var creator = await _userService.GetUserByToken(token);
         var community = new Community()
         {
             Id = Guid.NewGuid(),
@@ -56,7 +58,7 @@ public class CommunityService:ICommunityService
 
     public async Task DeleteCommunity(string token, Guid communityId)
     {
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(uc => uc.CommunityId == communityId);
         if (userCommunity == null || userCommunity.UserRole != Role.Admin) throw new CustomException("You don't have rights", 403);
         var community = userCommunity.Community;
@@ -96,7 +98,7 @@ public class CommunityService:ICommunityService
 
     public async Task SubscribeUser(string token, Guid communityId)
     {
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var community = await GetCommunityById(communityId);
         if (community.Subscribers.Any(s => s.UserId == user.Id)) throw new CustomException("User is already a subscriber", 400);
         UserCommunity userCommunity = new UserCommunity()
@@ -115,7 +117,7 @@ public class CommunityService:ICommunityService
 
     public async Task UnsubscribeUser(string token, Guid communityId)
     {
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var community = await GetCommunityById(communityId);
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
         if (userCommunity == null) throw new CustomException("User is not a subscriber of this group", 403);
@@ -132,14 +134,14 @@ public class CommunityService:ICommunityService
 
     public async Task<string?> GetUserRole(string token, Guid communityId)
     {
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == communityId);
         return userCommunity == null ? null : Enum.GetName(typeof(Role), userCommunity.UserRole);
     }
 
     public async Task<List<CommunityUserDto>> GetUserCommunityList(string token)
     {
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var communities = user.Communities.OrderBy(uc => uc.UserRole)
             .Select(c => CommunityMapper.UserCommunityToCommunityUserDto(c)).ToList();
 

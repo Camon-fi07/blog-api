@@ -36,7 +36,7 @@ public class TokenService:ITokenService
         ;
     }
     
-    private string getIdByToken(string token)
+    public string GetIdByToken(string token)
     {
         if (!_tokenHandler.CanReadToken(token)) throw new CustomException("Invalid token", 401);
         
@@ -83,23 +83,4 @@ public class TokenService:ITokenService
             return false;
         }
     }
-    
-    public async Task<User> GetUserByToken(string token)
-    {
-        try
-        {
-            if (await IsTokenBanned(token)) throw new CustomException("Token is banned", 401);
-            var userId = getIdByToken(token);
-
-            var user = await _db.Users.Include(u => u.Communities).ThenInclude(uc => uc.Community).ThenInclude(c => c.Posts).FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-            if(user == null) throw new CustomException("Can't find user", 401);
-            return user;
-        }
-        catch(CustomException)
-        {
-            throw;
-        }
-        
-    }
-    
 }

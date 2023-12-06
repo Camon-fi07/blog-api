@@ -7,8 +7,8 @@ public interface ITokenService
     public string CreateToken(User user);
 
     public Task<bool> IsTokenBanned(string token);
-
-    public Task<User> GetUserByToken(string token);
+    
+    public string GetIdByToken(string token);
 
     public bool ValidateToken(string? token);
 

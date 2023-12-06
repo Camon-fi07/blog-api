@@ -6,7 +6,7 @@ namespace weblog_API.Services.IServices;
 
 public interface IUserService
 {
-    Task<bool> isUniqueUser(string email);
+    public Task<User> GetUserByToken(string token);
 
     Task<TokenModel> Login(LoginCredentials loginRequest); 
     
@@ -17,5 +17,4 @@ public interface IUserService
     Task<UserDto> GetUser(string token);
 
     Task Logout(string token);
-
 }

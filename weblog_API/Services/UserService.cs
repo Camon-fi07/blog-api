@@ -1,8 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
@@ -19,17 +15,14 @@ namespace weblog_API.Services;
 public class UserService:IUserService
 {
     private readonly AppDbContext _db;
-    private TokenProperties _tokenProperties;
-    private ITokenService _tokenService;
+    private readonly ITokenService _tokenService;
     public UserService(AppDbContext db, IConfiguration configuration, ITokenService tokenService)
     {
         _db = db;
-        _tokenProperties = new TokenProperties();
-        configuration.GetSection(nameof(TokenProperties)).Bind(_tokenProperties);
         _tokenService = tokenService;
     }
 
-    public async Task<bool> isUniqueUser(string email)
+    private async Task<bool> IsUniqueUser(string email)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         return user == null;
@@ -37,7 +30,7 @@ public class UserService:IUserService
     
     public async Task<TokenModel> Registration(UserRegister registrationRequest)
     {
-        var isUserUnique = await isUniqueUser(registrationRequest.Email);
+        var isUserUnique = await IsUniqueUser(registrationRequest.Email);
         if (!isUserUnique) throw new CustomException("There is already a user with this email", 400 );
         User user = new()
         {
@@ -76,36 +69,31 @@ public class UserService:IUserService
         };
     }
 
+    public async Task<User> GetUserByToken(string token)
+    {
+        if (await _tokenService.IsTokenBanned(token)) throw new CustomException("Token is banned", 401);
+        var userId = _tokenService.GetIdByToken(token);
+
+        var user = await _db.Users.Include(u => u.Communities).ThenInclude(uc => uc.Community).ThenInclude(c => c.Posts).FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+        if(user == null) throw new CustomException("Can't find user", 401);
+        return user;
+    }
+    
     public async Task<UserDto> GetUser(string token)
     {
-        try
-        {
-            var user = await _tokenService.GetUserByToken(token);
-            return UserMapper.UserToUserDto(user);
-        }
-        catch (CustomException)
-        {
-            throw;
-        }
-       
+        var user = await GetUserByToken(token);
+        return UserMapper.UserToUserDto(user);
     }
 
     public async Task Edit(UserEdit userEdit, string token)
     {
-        try
-        {
-            var user = await _tokenService.GetUserByToken(token);
-            user.PhoneNumber = userEdit.PhoneNumber;
-            user.BirthDate = userEdit.BirthDate;
-            user.Gender = userEdit.Gender;
-            user.Email = userEdit.Email;
-            user.FullName = userEdit.FullName;
-            await _db.SaveChangesAsync();
-        }
-        catch (CustomException)
-        {
-            throw;
-        }
+        var user = await GetUserByToken(token);
+        user.PhoneNumber = userEdit.PhoneNumber;
+        user.BirthDate = userEdit.BirthDate;
+        user.Gender = userEdit.Gender;
+        user.Email = userEdit.Email;
+        user.FullName = userEdit.FullName;
+        await _db.SaveChangesAsync();
     }
 
     public async Task Logout(string token)

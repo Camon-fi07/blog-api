@@ -16,11 +16,13 @@ public class PostService:IPostService
     private readonly AppDbContext _db;
     private readonly ITokenService _tokenService;
     private readonly ICommunityService _communityService;
-    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService)
+    private readonly IUserService _userService;
+    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService, IUserService userService)
     {
         _db = db;
         _tokenService = tokenService;
         _communityService = communityService;
+        _userService = userService;
     }
 
     private  IQueryable<Post> GetAllPosts()
@@ -53,7 +55,7 @@ public class PostService:IPostService
     public async Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId)
     {
         var posts = _db.Posts.ToList();
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
         if (community != null && !community.Subscribers.Any(uc => uc.UserId == user.Id))
@@ -84,7 +86,7 @@ public class PostService:IPostService
         var posts = GetAllPosts().ToList();
         var post = posts.FirstOrDefault(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         var testUser = _db.Users.Include(u => u.Posts).ToList();
         var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == post.Community?.Id);
         if (post.Author.Id != user.Id && userCommunity?.UserRole != Role.Admin) throw new CustomException("User don't have access to this post", 403);
@@ -99,7 +101,7 @@ public class PostService:IPostService
     {
         var posts = GetAllPosts();
         User? user = null;
-        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
+        if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var community = await _communityService.GetCommunityById(communityId);
 
         if (user != null && community.IsClosed && !community.Subscribers.Any(uc => uc.User.Id == user.Id))
@@ -120,7 +122,7 @@ public class PostService:IPostService
         int page, int size, string? token, bool onlyMyCommunities)
     {
         User? user = null;
-        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
+        if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var posts = GetAllPosts();
         
         var filterPosts = posts.Skip((page-1)*size).Take(size);
@@ -145,7 +147,7 @@ public class PostService:IPostService
         var tags = post.Tags.Select(t => TagMapper.TagToTagDto(t)).ToList();
         
         User? user = null;
-        if(_tokenService.ValidateToken(token)) user = await _tokenService.GetUserByToken(token);
+        if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         
         return PostMapper.PostToPostFullDto(post, user, tags, comments);
     }
@@ -154,7 +156,7 @@ public class PostService:IPostService
     {
         var post = await _db.Posts.Include(p => p.UsersLiked).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         if (post.UsersLiked.Any(u => u.Id == user.Id)) throw new CustomException("User has already liked this post", 400);
         post.UsersLiked.Add(user);
         await _db.SaveChangesAsync();
@@ -164,7 +166,7 @@ public class PostService:IPostService
     {
         var post = await _db.Posts.Include(p => p.UsersLiked).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
-        var user = await _tokenService.GetUserByToken(token);
+        var user = await _userService.GetUserByToken(token);
         if (!post.UsersLiked.Any(u => u.Id == user.Id)) throw new CustomException("User don't like this post", 400);
         post.UsersLiked.Remove(user);
         await _db.SaveChangesAsync();
