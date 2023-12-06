@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Enums;
+using weblog_API.Middlewares;
 using weblog_API.Models;
 using weblog_API.Services.IServices;
 
@@ -14,7 +15,7 @@ public class AddressService:IAddressService
         _db = db;
     }
     
-    private async Task<SearchAddress> getAddressById(long? id)
+    private async Task<SearchAddress> GetAddressById(long? id)
     {
         AsAddrObj? addressObj;
         addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
@@ -22,7 +23,7 @@ public class AddressService:IAddressService
         {
             AsHouse? addressHouse;
             addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
-            if (addressHouse == null) throw new Exception("can't find address");
+            if (addressHouse == null) throw new CustomException("can't find address", 400);
             return new SearchAddress()
             {
                 Objectguid = addressHouse.Objectguid,
@@ -52,42 +53,27 @@ public class AddressService:IAddressService
     
     public async Task<List<SearchAddress>> Search(long parentObjectId, string? query)
     {
-        try
+        var addressesHierarchies = _db.AsAdmHierarchies.Where(a => a.Parentobjid == parentObjectId).ToList();
+        List<SearchAddress> resultAddresses = new List<SearchAddress>();
+        foreach (var address in addressesHierarchies)
         {
-            var addressesHierarchies = _db.AsAdmHierarchies.Where(a => a.Parentobjid == parentObjectId).ToList();
-            List<SearchAddress> resultAddresses = new List<SearchAddress>();
-            foreach (var address in addressesHierarchies)
-            {
-                var searchAddress = await getAddressById(address.Objectid);
-                if (searchAddress.Text.ToLower().Contains(query == null ? "" : query.ToLower())) resultAddresses.Add(searchAddress);
-                
-            }
+            var searchAddress = await GetAddressById(address.Objectid);
+            if (searchAddress.Text.ToLower().Contains(query == null ? "" : query.ToLower())) resultAddresses.Add(searchAddress);
+        }
 
-            return resultAddresses;
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return resultAddresses;
     }
 
     public async Task<List<SearchAddress>> AddressChain(Guid objectGuid)
     {
-        try
-        {
-            var objectId = await getIdByGuid(objectGuid);
-            var ids = (await _db.AsAdmHierarchies.FirstOrDefaultAsync(a => a.Objectid == objectId))?.Path!.Split(".");
-            List<SearchAddress> path = new List<SearchAddress>();
-            foreach (var id in ids)
-            {   
-                path.Add(await getAddressById(long.Parse(id)));
-            }
+        var objectId = await getIdByGuid(objectGuid);
+        var ids = (await _db.AsAdmHierarchies.FirstOrDefaultAsync(a => a.Objectid == objectId))?.Path!.Split(".");
+        List<SearchAddress> path = new List<SearchAddress>();
+        foreach (var id in ids)
+        {   
+            path.Add(await GetAddressById(long.Parse(id)));
+        }
 
-            return path;
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return path;
     }
 }
