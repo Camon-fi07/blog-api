@@ -58,7 +58,7 @@ public class PostService:IPostService
         var user = await _userService.GetUserByToken(token);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
-        if (community != null && !community.Subscribers.Any(uc => uc.UserId == user.Id))
+        if (community != null && community.Subscribers.All(uc => uc.UserId != user.Id))
             throw new CustomException("User is not a subscriber of this community", 403);
         
         var post = new Post()
@@ -114,7 +114,7 @@ public class PostService:IPostService
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var community = await _communityService.GetCommunityById(communityId);
 
-        if (user != null && community.IsClosed && !community.Subscribers.Any(uc => uc.User.Id == user.Id))
+        if (user != null && community.IsClosed && community.Subscribers.All(uc => uc.User.Id != user.Id))
             throw new CustomException("User is not a subscriber of this group", 403);
         
         var communityPosts = posts.Where(p => p.Community != null && p.Community.Id== communityId);
@@ -170,7 +170,7 @@ public class PostService:IPostService
         var post = await _db.Posts.Include(p => p.UsersLiked).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         var user = await _userService.GetUserByToken(token);
-        if (!post.UsersLiked.Any(u => u.Id == user.Id)) throw new CustomException("User don't like this post", 400);
+        if (post.UsersLiked.All(u => u.Id != user.Id)) throw new CustomException("User don't like this post", 400);
         post.UsersLiked.Remove(user);
         await _db.SaveChangesAsync();
     }
