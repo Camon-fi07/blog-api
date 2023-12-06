@@ -16,7 +16,7 @@ public class UserService:IUserService
 {
     private readonly AppDbContext _db;
     private readonly ITokenService _tokenService;
-    public UserService(AppDbContext db, IConfiguration configuration, ITokenService tokenService)
+    public UserService(AppDbContext db, ITokenService tokenService)
     {
         _db = db;
         _tokenService = tokenService;

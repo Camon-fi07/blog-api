@@ -37,24 +37,24 @@ public class PostService:IPostService
         return posts;
     }
 
-    private List<Post> SortPosts(PostSorting sorting, List<Post> posts)
+    private IQueryable<Post> SortPosts(PostSorting sorting, IQueryable<Post> posts)
     {
         switch (sorting)
         {
             case PostSorting.CreateAsc:
-                return posts.OrderBy(p => p.CreateTime).ToList();
+                return posts.OrderBy(p => p.CreateTime);
             case PostSorting.CreateDesc:
-                return posts.OrderByDescending(p => p.CreateTime).ToList();
+                return posts.OrderByDescending(p => p.CreateTime);
             case PostSorting.LikeAsc:
-                return posts.OrderBy(p => p.UsersLiked.Count).ToList();
+                return posts.OrderBy(p => p.UsersLiked.Count);
             default:
-                return posts.OrderByDescending(p => p.UsersLiked.Count).ToList();
+                return posts.OrderByDescending(p => p.UsersLiked.Count);
         }
     }    
     
     public async Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId)
     {
-        var posts = _db.Posts.ToList();
+        var posts = _db.Posts;
         var user = await _userService.GetUserByToken(token);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
@@ -87,7 +87,6 @@ public class PostService:IPostService
         var post = posts.FirstOrDefault(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         var user = await _userService.GetUserByToken(token);
-        var testUser = _db.Users.Include(u => u.Posts).ToList();
         var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == post.Community?.Id);
         if (post.Author.Id != user.Id && userCommunity?.UserRole != Role.Admin) throw new CustomException("User don't have access to this post", 403);
         posts.Remove(post);
@@ -95,7 +94,18 @@ public class PostService:IPostService
         await _db.SaveChangesAsync();
     }
 
-
+    private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,
+        PostSorting sorting,
+        int page, int size)
+    {
+        var filterPosts = posts.Skip((page-1)*size).Take(size);
+        if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
+        if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
+        if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
+        if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
+        return SortPosts(sorting, filterPosts);
+    }
+    
     public async Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token)
     {
@@ -107,15 +117,12 @@ public class PostService:IPostService
         if (user != null && community.IsClosed && !community.Subscribers.Any(uc => uc.User.Id == user.Id))
             throw new CustomException("User is not a subscriber of this group", 403);
         
-        var filterPosts = posts.Skip((page-1)*size).Take(size);
-        filterPosts = posts.Where(p => p.Community != null && p.Community.Id== communityId);
-        if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
-        if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
-        if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
-        if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
-        var sortPosts = SortPosts(sorting, filterPosts.ToList())
-            .Select(p => PostMapper.PostToPostDto(p, user)).ToList();
-        return sortPosts;
+        var communityPosts = posts.Where(p => p.Community != null && p.Community.Id== communityId);
+        
+        communityPosts = FilterPosts(communityPosts, tags,  author,  minReadingTime,  maxReadingTime,  sorting,
+             page, size);
+        
+        return communityPosts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
     }
     
     public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
@@ -124,16 +131,12 @@ public class PostService:IPostService
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var posts = GetAllPosts();
-        
-        var filterPosts = posts.Skip((page-1)*size).Take(size);
-        if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
-        if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
-        if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
-        if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime); 
+
+        var filterPosts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting,
+            page, size); 
         if(user != null && onlyMyCommunities) filterPosts = filterPosts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
-        var sortPosts = SortPosts(sorting, filterPosts.ToList())
-            .Select(p => PostMapper.PostToPostDto(p, user)).ToList();
-        return sortPosts;
+        
+        return filterPosts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
     }
 
     public async Task<PostFullDto> GetConcretePost(Guid id, string? token)
