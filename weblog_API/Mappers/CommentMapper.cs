@@ -15,7 +15,8 @@ public static class CommentMapper
             AuthorName = comment.Author.FullName,
             DeleteDate = comment.DeleteDate,
             ModifiedDate = comment.ModifiedDate,
-            SubComments = comment.SubComments.Count
+            SubComments = comment.SubComments.Count,
+            content = comment.Content
         };
         return commentDto;
     }
