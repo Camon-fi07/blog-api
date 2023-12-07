@@ -53,7 +53,7 @@ public class PostController : Controller
     
     [HttpPost("like")]
     [Authorize]
-    public async Task<ActionResult<PostFullDto>> SetLike(Guid id)
+    public async Task<IActionResult> SetLike(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         await _postService.AddLike(token,id);
@@ -61,7 +61,7 @@ public class PostController : Controller
     }    
     [HttpDelete("like")]
     [Authorize]
-    public async Task<ActionResult<PostFullDto>> DeleteLike(Guid id)
+    public async Task<IActionResult> DeleteLike(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         await _postService.DeleteLike(token,id);
