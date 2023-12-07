@@ -19,6 +19,11 @@ public class CommentService:ICommentService
         _userService = userService;
     }
 
+    private Boolean IsCommentDeleted(Comment comment)
+    {
+        return comment.DeleteDate != null;
+    }
+    
     public async Task<List<CommentDto>> GetPostComments(Guid postId)
     {
         var post = await _db.Posts.Include(p => p.Comments).FirstOrDefaultAsync(p => p.Id == postId);
@@ -48,6 +53,10 @@ public class CommentService:ICommentService
         }
         
         var parentComment = createCommentDto.parentId == null ? null: await _db.Comments.FirstOrDefaultAsync(c => c.Id == createCommentDto.parentId);
+        
+        if(parentComment == null && createCommentDto.parentId != null) throw new CustomException("Can't find parent comment", 400);
+        if(parentComment != null && IsCommentDeleted(parentComment)) throw new CustomException("Parent comment was deleted", 400);
+        
         var comment = new Comment()
         {
             Id = Guid.NewGuid(),
@@ -66,8 +75,11 @@ public class CommentService:ICommentService
     {
         var comment = await _db.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
         if(comment == null) throw new CustomException("Can't find this comment", 400);
+        if(IsCommentDeleted(comment)) throw new CustomException("This comment was deleted", 403);
+        
         var user = await _userService.GetUserByToken(token);
         if (comment.Author.Id != user.Id) throw new CustomException("User can't edit this comment", 403);
+        
         comment.Content = content;
         comment.ModifiedDate = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -76,9 +88,13 @@ public class CommentService:ICommentService
     public async Task DeleteComment(Guid commentId, string token)
     {
         var comment = await _db.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+        
         if(comment == null) throw new CustomException("Can't find this comment", 400);
+        if(IsCommentDeleted(comment)) throw new CustomException("This comment was deleted", 403);
+        
         var user = await _userService.GetUserByToken(token);
         if (comment.Author.Id != user.Id) throw new CustomException("User can't delete this comment", 403);
+        
         if (comment.SubComments.Count > 0)
         {
             comment.Content = "Комментарий удалён";
