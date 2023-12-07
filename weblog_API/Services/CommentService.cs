@@ -26,18 +26,27 @@ public class CommentService:ICommentService
     
     public async Task<List<CommentDto>> GetPostComments(Guid postId)
     {
-        var post = await _db.Posts.Include(p => p.Comments).FirstOrDefaultAsync(p => p.Id == postId);
+        var post = await _db.Posts
+            .Include(p => p.Comments).ThenInclude(c => c.SubComments)
+            .Include(p => p.Comments).ThenInclude(c => c.Author)
+            .FirstOrDefaultAsync(p => p.Id == postId);
         if (post == null) throw new CustomException("Can't find this post", 400);
-        var comments = post.Comments.Select(c => CommentMapper.CommentToCommentDto(c));
+        var comments = post.Comments.Where(c => c.ParentComment == null).Select(c => CommentMapper.CommentToCommentDto(c));
         return comments.ToList();
     }
 
     public async Task<List<CommentDto>> GetAllNestedComments(Guid commentId)
     {
-        var rootComment = await _db.Comments.Include(c => c.SubComments).FirstOrDefaultAsync(c => c.Id == commentId);
-        if(rootComment == null) throw new CustomException("Can't find this comment", 400);
-        var comments = rootComment.SubComments.Select(c => CommentMapper.CommentToCommentDto(c));
-        return comments.ToList();
+        if(!_db.Comments.Any(c => c.Id == commentId)) throw new CustomException("Can't find this comment", 400);
+        
+        var comments = _db.Comments.Include(c => c.Author)
+            .Include(c => c.Post)
+            .Include(c => c.SubComments)
+            .Include(c => c.ParentComment)
+            .Where(c => c.ParentComment.Id == commentId)
+            .Select(c => CommentMapper.CommentToCommentDto(c));
+        
+        return await comments.ToListAsync();
     }
 
     public async Task AddComment(Guid postId, CreateCommentDto createCommentDto, string token)
@@ -87,7 +96,7 @@ public class CommentService:ICommentService
 
     public async Task DeleteComment(Guid commentId, string token)
     {
-        var comment = await _db.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+        var comment = await _db.Comments.Include(c => c.Author).Include(c => c.SubComments).FirstOrDefaultAsync(c => c.Id == commentId);
         
         if(comment == null) throw new CustomException("Can't find this comment", 400);
         if(IsCommentDeleted(comment)) throw new CustomException("This comment was deleted", 403);
