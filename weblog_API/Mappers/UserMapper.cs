@@ -19,7 +19,7 @@ public static class UserMapper
         };
         return userDto;
     } 
-    public static AuthorDto UserToAuthorDto(User user)
+    public static AuthorDto UserToAuthorDto(User user, int likes)
     {
         AuthorDto authorDto = new AuthorDto()
         {
@@ -28,7 +28,7 @@ public static class UserMapper
             BirthDate = user.BirthDate,
             Posts = user.Posts.Count,
             Created = user.CreateTime,
-            Likes = user.LikedPosts.Count
+            Likes = likes
         };
         return authorDto;
     } 
