@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
+using weblog_API.Data.Dto;
+using weblog_API.Mappers;
 using weblog_API.Models.Tags;
 using weblog_API.Services.IServices;
 
@@ -13,9 +15,9 @@ public class TagsService:ITagsService
         _db = db;
     }
 
-    public async Task<List<Tag>> GetTags()
+    public List<TagDto> GetTags()
     {
-        var tags = await _db.Tags.ToListAsync();
+        var tags = _db.Tags.Select(t => TagMapper.TagToTagDto(t)).ToList();
         return tags;
     }
 }

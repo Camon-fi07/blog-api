@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using weblog_API.Models.Tags;
+using weblog_API.Data.Dto;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
@@ -15,9 +15,9 @@ public class TagController : Controller
     }
     
     [HttpGet()]
-    public async Task<ActionResult<List<Tag>>> GetTags()
+    public  ActionResult<List<TagDto>> GetTags()
     {
-        var tags = await _tagsService.GetTags();
+        var tags = _tagsService.GetTags();
         return Ok(tags);
     }
 }
