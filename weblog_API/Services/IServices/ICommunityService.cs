@@ -5,7 +5,7 @@ namespace weblog_API.Services.IServices;
 
 public interface ICommunityService
 {
-    public Task<Community> GetCommunityById(Guid Id);
+    public Task<Community> GetCommunityById(Guid id);
     public Task CreateCommunity(CreateCommunityDto communityInfo,string token);
 
     public Task DeleteCommunity(string token, Guid communityId);

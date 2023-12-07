@@ -12,19 +12,17 @@ namespace weblog_API.Services;
 public class CommunityService:ICommunityService
 {
     private readonly AppDbContext _db;
-    private readonly ITokenService _tokenService;
     private readonly IUserService _userService;
-    public CommunityService(AppDbContext db, ITokenService tokenService, IUserService userService)
+    public CommunityService(AppDbContext db, IUserService userService)
     {
         _db = db;
-        _tokenService = tokenService;
         _userService = userService;
     }
 
-    public async Task<Community> GetCommunityById(Guid Id)
+    public async Task<Community> GetCommunityById(Guid id)
     {
         var community = await _db.Communities.Include(c => c.Subscribers).ThenInclude(uc => uc.User)
-            .FirstOrDefaultAsync(c => c.Id == Id);
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (community == null) throw new CustomException("Invalid id", 400);
         return community;
     }
