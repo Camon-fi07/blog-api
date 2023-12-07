@@ -41,10 +41,10 @@ public class CommentController : Controller
    
    [HttpPut("{commentId:guid}/edit")]
    [Authorize]
-   public async Task<IActionResult> EditComment([FromBody] string content, Guid commentId)
+   public async Task<IActionResult> EditComment([FromBody] UpdateCommentDto updateCommentDto, Guid commentId)
    {
       string token = HttpContext.Request.Headers["Authorization"];
-      await _commentService.EditComment(commentId, content, token);
+      await _commentService.EditComment(commentId, updateCommentDto, token);
       return Ok();
    }
    

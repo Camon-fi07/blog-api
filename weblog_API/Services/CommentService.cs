@@ -80,7 +80,7 @@ public class CommentService:ICommentService
         await _db.SaveChangesAsync();
     }
 
-    public async Task EditComment(Guid commentId, string content, string token)
+    public async Task EditComment(Guid commentId, UpdateCommentDto updateCommentDto, string token)
     {
         var comment = await _db.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
         if(comment == null) throw new CustomException("Can't find this comment", 400);
@@ -89,7 +89,7 @@ public class CommentService:ICommentService
         var user = await _userService.GetUserByToken(token);
         if (comment.Author.Id != user.Id) throw new CustomException("User can't edit this comment", 403);
         
-        comment.Content = content;
+        comment.Content = updateCommentDto.Content;
         comment.ModifiedDate = DateTime.UtcNow;
         await _db.SaveChangesAsync();
     }
