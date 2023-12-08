@@ -17,12 +17,14 @@ public class PostService:IPostService
     private readonly ITokenService _tokenService;
     private readonly ICommunityService _communityService;
     private readonly IUserService _userService;
-    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService, IUserService userService)
+    private readonly IAddressService _addressService;
+    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService, IUserService userService, IAddressService addressService)
     {
         _db = db;
         _tokenService = tokenService;
         _communityService = communityService;
         _userService = userService;
+        _addressService = addressService;
     }
 
     private  IQueryable<Post> GetAllPosts()
@@ -60,6 +62,9 @@ public class PostService:IPostService
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
         if (community != null && community.Subscribers.All(uc => uc.UserId != user.Id))
             throw new CustomException("User is not a subscriber of this community", 403);
+
+        if (createPostDto.AddressId != null && !await _addressService.IsAddressAvailable((Guid)createPostDto.AddressId))
+            throw new CustomException("Invalid address", 400);
         
         var post = new Post()
         {

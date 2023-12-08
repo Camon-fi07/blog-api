@@ -7,5 +7,6 @@ public interface IAddressService
     Task<List<SearchAddress>> Search(long parentObjectId, string? query);
     
     Task<List<SearchAddress>> AddressChain(Guid objectGuid);
-    
+
+    public Task<Boolean> IsAddressAvailable(Guid id);
 }
