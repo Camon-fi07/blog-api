@@ -15,7 +15,7 @@ public class AddressService:IAddressService
         _db = db;
     }
     
-    private async Task<SearchAddress> GetAddressById(long? id)
+    private async Task<SearchAddress?> GetAddressById(long? id)
     {
         AsAddrObj? addressObj;
         addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
@@ -23,12 +23,15 @@ public class AddressService:IAddressService
         {
             AsHouse? addressHouse;
             addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
-            if (addressHouse == null) throw new CustomException("can't find address", 400);
+            if (addressHouse == null) return null;
+            var text = $"{addressHouse.Housenum}";
+            if (addressHouse.Addnum1 != null) text += $" стр. {addressHouse.Addnum1}";
+            if (addressHouse.Addnum2 != null) text += $" стр. {addressHouse.Addnum2}";
             return new SearchAddress()
             {
                 Objectguid = addressHouse.Objectguid,
                 Objectid = addressHouse.Objectid,
-                Text = addressHouse.Housenum,
+                Text = text,
                 ObjectLevel = ObjectLevel.Building.ToString(),
                 ObjectLevelText = "Здание (сооружение)"
             };
@@ -47,7 +50,7 @@ public class AddressService:IAddressService
     {
         var id = (await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectguid == guid))?.Objectid;
         if (id == null) id = (await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectguid == guid))?.Objectid;
-        if (id == null) throw new Exception("can't find address with this id");
+        if (id == null) throw new CustomException("can't find address with this id",400);
         return id;
     }
     
@@ -58,7 +61,9 @@ public class AddressService:IAddressService
         foreach (var address in addressesHierarchies)
         {
             var searchAddress = await GetAddressById(address.Objectid);
+            if (searchAddress == null) continue;
             if (searchAddress.Text.ToLower().Contains(query == null ? "" : query.ToLower())) resultAddresses.Add(searchAddress);
+            if (resultAddresses.Count == 10) break;
         }
 
         return resultAddresses;
