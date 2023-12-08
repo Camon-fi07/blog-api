@@ -46,7 +46,7 @@ public class AddressService:IAddressService
         };
     }
 
-    public async Task<Boolean> IsAddressAvailable(Guid id)
+    public async Task<bool> IsAddressAvailable(Guid id)
     {
         var isAddressObj = await _db.AsAddrObjs.AnyAsync(a => a.Objectguid == id);
         if (!isAddressObj)

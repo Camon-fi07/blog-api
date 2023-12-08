@@ -134,7 +134,7 @@ public class CommunityService:ICommunityService
     {
         var user = await _userService.GetUserByToken(token);
         var userCommunity = user.Communities.FirstOrDefault(c => c.CommunityId == communityId);
-        return userCommunity == null ? null : Enum.GetName(typeof(Role), userCommunity.UserRole);
+        return userCommunity == null ? "null" : Enum.GetName(typeof(Role), userCommunity.UserRole);
     }
 
     public async Task<List<CommunityUserDto>> GetUserCommunityList(string token)

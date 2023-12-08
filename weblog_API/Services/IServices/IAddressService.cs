@@ -8,5 +8,5 @@ public interface IAddressService
     
     Task<List<SearchAddress>> AddressChain(Guid objectGuid);
 
-    public Task<Boolean> IsAddressAvailable(Guid id);
+    public Task<bool> IsAddressAvailable(Guid id);
 }

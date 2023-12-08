@@ -60,8 +60,8 @@ public class PostService:IPostService
         var user = await _userService.GetUserByToken(token);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
-        if (community != null && community.Subscribers.All(uc => uc.UserId != user.Id))
-            throw new CustomException("User is not a subscriber of this community", 403);
+        if (community != null && community.Subscribers.All(uc => uc.UserId != user.Id || uc.UserRole!=Role.Admin))
+            throw new CustomException("User is not an admin of this community", 403);
 
         if (createPostDto.AddressId != null && !await _addressService.IsAddressAvailable((Guid)createPostDto.AddressId))
             throw new CustomException("Invalid address", 400);
