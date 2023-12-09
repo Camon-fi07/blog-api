@@ -25,24 +25,24 @@ public class AddressService:IAddressService
             addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
             if (addressHouse == null) return null;
             var text = $"{addressHouse.Housenum}";
-            if (addressHouse.Addnum1 != null) text += $" стр. {addressHouse.Addnum1}";
-            if (addressHouse.Addnum2 != null) text += $" стр. {addressHouse.Addnum2}";
+            if (addressHouse.Addnum1 != null) text += $" {AddressType.GetHouseType(addressHouse.Addtype1)} {addressHouse.Addnum1}";
+            if (addressHouse.Addnum2 != null) text += $" {AddressType.GetHouseType(addressHouse.Addtype1)} {addressHouse.Addnum2}";
             return new SearchAddress()
             {
                 Objectguid = addressHouse.Objectguid,
                 Objectid = addressHouse.Objectid,
                 Text = text,
                 ObjectLevel = ObjectLevel.Building.ToString(),
-                ObjectLevelText = "Здание (сооружение)"
+                ObjectLevelText = AddressType.GetHouseType(addressHouse.Housetype)
             };
         }
         return new SearchAddress()
         {
             Objectguid = addressObj.Objectguid,
             Objectid = addressObj.Objectid,
-            Text = addressObj.Name,
+            Text = $"{addressObj.Typename} {addressObj.Name}",
             ObjectLevel = addressObj.Level,
-            ObjectLevelText = addressObj.Typename
+            ObjectLevelText = AddressType.GetAddressType(addressObj.Level)
         };
     }
 
