@@ -33,7 +33,6 @@ public class TokenService:ITokenService
             ValidAudience = _tokenProperties.Audience,
             ValidateAudience = true
         };
-        ;
     }
     
     public string GetIdByToken(string token)

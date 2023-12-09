@@ -59,7 +59,7 @@ builder.Services.AddScoped<ITagsService, TagsService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
-
+builder.Services.AddHostedService<BackgroundTokenService>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
