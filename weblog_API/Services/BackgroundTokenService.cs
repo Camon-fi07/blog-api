@@ -55,7 +55,7 @@ public class BackgroundTokenService:BackgroundService
 
             }
             
-            await Task.Delay(TimeSpan.FromSeconds(24), stoppingToken);
+            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 }
