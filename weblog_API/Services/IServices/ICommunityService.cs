@@ -1,5 +1,6 @@
 using weblog_API.Data.Dto;
 using weblog_API.Dto.Community;
+using weblog_API.Enums;
 using weblog_API.Models.Community;
 
 namespace weblog_API.Services.IServices;
@@ -17,7 +18,7 @@ public interface ICommunityService
     
     public Task<List<CommunityUserDto>> GetUserCommunityList(string token);
 
-    public Task<string?> GetUserRole(string token, Guid communityId);
+    public Task<RoleDto> GetUserRole(string token, Guid communityId);
 
     public Task SubscribeUser(string token, Guid communityId);
     

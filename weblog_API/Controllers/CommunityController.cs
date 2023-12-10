@@ -65,7 +65,7 @@ public class CommunityController : Controller
     
     [HttpGet("{id:guid}/role")]
     [Authorize]
-    public async Task<ActionResult<string?>> GetUserRole(Guid id)
+    public async Task<ActionResult<RoleDto>> GetUserRole(Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         var role = await _communityService.GetUserRole(token, id);

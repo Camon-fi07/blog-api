@@ -52,7 +52,7 @@ public class PostController : Controller
         return Ok(posts);
     }    
     
-    [HttpPost("like")]
+    [HttpPost("{id:guid}/like")]
     [Authorize]
     public async Task<IActionResult> SetLike(Guid id)
     {
@@ -60,7 +60,7 @@ public class PostController : Controller
         await _postService.AddLike(token,id);
         return Ok();
     }    
-    [HttpDelete("like")]
+    [HttpDelete("{id:guid}/like")]
     [Authorize]
     public async Task<IActionResult> DeleteLike(Guid id)
     {

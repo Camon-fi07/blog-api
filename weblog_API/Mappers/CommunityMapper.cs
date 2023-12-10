@@ -39,7 +39,7 @@ public static class CommunityMapper
         {
             CommunityId = community.CommunityId,
             UserId = community.UserId,
-            Role = Enum.GetName(typeof(Role), community.UserRole)
+            Role = community.UserRole
         };
         return communityUserDto;
     }
