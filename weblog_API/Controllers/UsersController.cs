@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using weblog_API.Data.Dto;
+using weblog_API.Dto.User;
 using weblog_API.Models;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;

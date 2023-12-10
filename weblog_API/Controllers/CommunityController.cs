@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Data.Dto;
+using weblog_API.Dto.Community;
+using weblog_API.Dto.Post;
 using weblog_API.Enums;
 using weblog_API.Services.IServices;
 using IPostService = weblog_API.Services.IServices.IPostService;

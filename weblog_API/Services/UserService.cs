@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using weblog_API.AppSettingsModels;
 using weblog_API.Data;
-using weblog_API.Data.Dto;
+using weblog_API.Dto.User;
 using weblog_API.Mappers;
 using weblog_API.Middlewares;
 using weblog_API.Models;

@@ -6,8 +6,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using weblog_API.AppSettingsModels;
 using weblog_API.Data;
+using weblog_API.Dto.User;
 using weblog_API.Middlewares;
 using weblog_API.Models;
+using weblog_API.Models.User;
 using weblog_API.Services;
 using weblog_API.Services.IServices;
 
@@ -50,7 +52,6 @@ builder.Services.AddAuthentication(x =>
         }
     };
 });
-
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAddressService, AddressService>();

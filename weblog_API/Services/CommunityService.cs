@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Dto.Community;
+using weblog_API.Dto.User;
 using weblog_API.Enums;
 using weblog_API.Mappers;
 using weblog_API.Middlewares;
@@ -84,10 +86,10 @@ public class CommunityService:ICommunityService
         var admins = community.Subscribers.Where(c => c.UserRole == Role.Admin).Select(a => new UserDto()
         {
             Id = a.User.Id,
-            createTime = a.User.CreateTime,
-            Phone = a.User.PhoneNumber,
+            CreateTime = a.User.CreateTime,
+            PhoneNumber = a.User.PhoneNumber,
             FullName = a.User.FullName,
-            Gender = Enum.GetName(typeof(Gender), a.User.Gender),
+            Gender = a.User.Gender,
             Email = a.User.Email
         }).ToList();
 

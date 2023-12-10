@@ -1,4 +1,5 @@
 using weblog_API.Data.Dto;
+using weblog_API.Dto.User;
 using weblog_API.Enums;
 using weblog_API.Models.User;
 
@@ -11,11 +12,11 @@ public static class UserMapper
         UserDto userDto = new UserDto()
         {
             Email = user.Email,
-            Gender = Enum.GetName(typeof(Gender), user.Gender),
+            Gender = user.Gender,
             FullName = user.FullName,
             Id = user.Id,
-            createTime = user.CreateTime,
-            Phone = user.PhoneNumber
+            CreateTime = user.CreateTime,
+            PhoneNumber = user.PhoneNumber
         };
         return userDto;
     } 
@@ -24,7 +25,7 @@ public static class UserMapper
         AuthorDto authorDto = new AuthorDto()
         {
             FullName = user.FullName,
-            Gender = Enum.GetName(typeof(Gender), user.Gender),
+            Gender = user.Gender,
             BirthDate = user.BirthDate,
             Posts = user.Posts.Count,
             Created = user.CreateTime,

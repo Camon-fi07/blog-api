@@ -1,4 +1,7 @@
 using weblog_API.Data.Dto;
+using weblog_API.Dto;
+using weblog_API.Dto.Comment;
+using weblog_API.Dto.Post;
 using weblog_API.Models.Post;
 using weblog_API.Models.User;
 

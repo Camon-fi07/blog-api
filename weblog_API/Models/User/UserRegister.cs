@@ -9,10 +9,11 @@ public class UserRegister
     public string FullName { get; set; }
     [Required]
     public string Password { get; set; }
-    [Required]
+    [EmailAddress]
     public string Email { get; set; }
-    public DateOnly BirthDate { get; set; }
-    [Required]
+    public DateOnly? BirthDate { get; set; }
     public Gender Gender { get; set; }
-    public string PhoneNumber { get; set; }
+    [Required]
+    [RegularExpression(@"^\+7 \([0-9]{3}\) [0-9]{3} [0-9]{2} [0-9]{2}$")]
+    public string? PhoneNumber { get; set; }
 }

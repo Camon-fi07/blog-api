@@ -1,6 +1,4 @@
-using weblog_API.Models.Tags;
-
-namespace weblog_API.Data.Dto;
+namespace weblog_API.Dto.Post;
 
 public class PostDto
 {
