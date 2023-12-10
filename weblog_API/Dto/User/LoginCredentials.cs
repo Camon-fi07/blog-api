@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace weblog_API.Data.Dto;
+namespace weblog_API.Dto.User;
 
 public class LoginCredentials
 {
-    [Required] 
+    [EmailAddress]
     public string Email { get; set; }
-    [Required]
     public string Password { get; set; }
 }

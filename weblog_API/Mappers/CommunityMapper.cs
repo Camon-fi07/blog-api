@@ -1,4 +1,5 @@
-using weblog_API.Data.Dto;
+using weblog_API.Dto.Community;
+using weblog_API.Dto.User;
 using weblog_API.Enums;
 using weblog_API.Models.Community;
 namespace weblog_API.Mappers;

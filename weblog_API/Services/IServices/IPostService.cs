@@ -1,4 +1,5 @@
 using weblog_API.Data.Dto;
+using weblog_API.Dto.Post;
 using weblog_API.Enums;
 
 namespace weblog_API.Services.IServices;

@@ -1,4 +1,4 @@
-namespace weblog_API.Data.Dto;
+namespace weblog_API.Dto.Community;
 
 public class CommunityUserDto
 {

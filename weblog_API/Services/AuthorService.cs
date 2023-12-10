@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
 using weblog_API.Data.Dto;
+using weblog_API.Dto.User;
 using weblog_API.Mappers;
 using weblog_API.Models.Post;
 using weblog_API.Services.IServices;

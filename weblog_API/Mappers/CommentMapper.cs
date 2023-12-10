@@ -1,4 +1,5 @@
 using weblog_API.Data.Dto;
+using weblog_API.Dto.Comment;
 using weblog_API.Models.Comment;
 
 namespace weblog_API.Mappers;
