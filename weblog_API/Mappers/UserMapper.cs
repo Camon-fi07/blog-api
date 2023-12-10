@@ -12,7 +12,7 @@ public static class UserMapper
         UserDto userDto = new UserDto()
         {
             Email = user.Email,
-            Gender = Enum.GetName(typeof(Gender), user.Gender),
+            Gender = user.Gender,
             FullName = user.FullName,
             Id = user.Id,
             CreateTime = user.CreateTime,
@@ -25,7 +25,7 @@ public static class UserMapper
         AuthorDto authorDto = new AuthorDto()
         {
             FullName = user.FullName,
-            Gender = Enum.GetName(typeof(Gender), user.Gender),
+            Gender = user.Gender,
             BirthDate = user.BirthDate,
             Posts = user.Posts.Count,
             Created = user.CreateTime,

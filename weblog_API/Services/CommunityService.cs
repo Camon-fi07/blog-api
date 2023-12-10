@@ -89,7 +89,7 @@ public class CommunityService:ICommunityService
             CreateTime = a.User.CreateTime,
             PhoneNumber = a.User.PhoneNumber,
             FullName = a.User.FullName,
-            Gender = Enum.GetName(typeof(Gender), a.User.Gender),
+            Gender = a.User.Gender,
             Email = a.User.Email
         }).ToList();
 

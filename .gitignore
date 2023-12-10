@@ -9,6 +9,8 @@ nupkg/
 # Rider
 .idea/
 
+.vs/
+
 .fleet/
 
 .cr/
