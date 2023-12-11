@@ -6,6 +6,6 @@ public class CommunityDto
     public DateTime CreateTime { get; set; }
     public string Name { get; set; }
     public string? Description { get; set; }
-    public Boolean IsClosed { get; set; }
+    public bool IsClosed { get; set; }
     public int SubscribersCount { get; set; }
 }

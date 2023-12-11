@@ -20,7 +20,7 @@ public class CommentService:ICommentService
         _userService = userService;
     }
 
-    private Boolean IsCommentDeleted(Comment comment)
+    private bool IsCommentDeleted(Comment comment)
     {
         return comment.DeleteDate != null;
     }
@@ -83,7 +83,7 @@ public class CommentService:ICommentService
 
     public async Task EditComment(Guid commentId, UpdateCommentDto updateCommentDto, string token)
     {
-        var comment = await _db.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+        var comment = await _db.Comments.Include(comment => comment.Author).FirstOrDefaultAsync(c => c.Id == commentId);
         if(comment == null) throw new CustomException("Can't find this comment", 400);
         if(IsCommentDeleted(comment)) throw new CustomException("This comment was deleted", 403);
         

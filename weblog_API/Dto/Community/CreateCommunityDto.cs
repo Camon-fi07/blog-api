@@ -9,5 +9,5 @@ public class CreateCommunityDto
     public string Name { get; set; }
     [MaxLength(500)]
     public string? Description { get; set; }
-    public Boolean IsClosed { get; set; }
+    public bool IsClosed { get; set; }
 }

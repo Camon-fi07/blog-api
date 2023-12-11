@@ -100,15 +100,20 @@ public class PostService:IPostService
         await _db.SaveChangesAsync();
     }
 
-    private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,
-        PostSorting sorting,
-        int page, int size)
+    private IQueryable<Post> FilterClosedCommunities(User user, IQueryable<Post> posts)
     {
-        var filterPosts = posts.Skip((page-1)*size).Take(size);
+        return posts.Where(p => p.Community == null || !p.Community.IsClosed || user.Communities.Any(c => c.CommunityId == p.Community.Id));
+    }
+    
+    private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,
+        PostSorting sorting, int page, int size)
+    {
+        var filterPosts = posts;
         if(tags.Count > 0) filterPosts = filterPosts.Where(p => p.Tags.Any(t => tags.Any(id => t.Id == id)));
         if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
         if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
+        filterPosts = filterPosts.Skip((page - 1) * size).Take(size);
         return SortPosts(sorting, filterPosts);
     }
     
@@ -123,7 +128,7 @@ public class PostService:IPostService
         if (user != null && community.IsClosed && community.Subscribers.All(uc => uc.User.Id != user.Id))
             throw new CustomException("User is not a subscriber of this group", 403);
         
-        var communityPosts = posts.Where(p => p.Community != null && p.Community.Id== communityId);
+        var communityPosts = posts.Where(p => p.Community != null && p.Community.Id == communityId);
         
         communityPosts = FilterPosts(communityPosts, tags,  author,  minReadingTime,  maxReadingTime,  sorting,
              page, size);
@@ -138,11 +143,14 @@ public class PostService:IPostService
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var posts = GetAllPosts();
 
-        var filterPosts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting,
-            page, size); 
-        if(user != null && onlyMyCommunities) filterPosts = filterPosts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
+        if (user != null)
+        {
+            posts = FilterClosedCommunities(user, posts);
+            if(onlyMyCommunities) posts = posts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
+        }
+        posts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting, page, size); 
         
-        return filterPosts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
+        return posts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
     }
 
     public async Task<PostFullDto> GetConcretePost(Guid id, string? token)
@@ -163,10 +171,12 @@ public class PostService:IPostService
 
     public async Task AddLike(string token, Guid id)
     {
-        var post = await _db.Posts.Include(p => p.UsersLiked).FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _db.Posts.Include(p => p.UsersLiked).Include(p => p.Community).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         var user = await _userService.GetUserByToken(token);
         if (post.UsersLiked.Any(u => u.Id == user.Id)) throw new CustomException("User has already liked this post", 400);
+        if(post.Community != null && post.Community.IsClosed && user.Communities.All(c => c.UserId!=user.Id)) 
+            throw new CustomException("User can't add like to this post", 403);
         post.UsersLiked.Add(user);
         await _db.SaveChangesAsync();
     }
