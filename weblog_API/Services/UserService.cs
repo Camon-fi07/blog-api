@@ -52,7 +52,7 @@ public class UserService:IUserService
     public async Task<TokenModel> Login(LoginCredentials loginRequest)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
-        if (user == null) throw new CustomException("Invalid email or password", 401);
+        if (user == null) throw new CustomException("Invalid email", 401);
 
         if (BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
@@ -61,10 +61,7 @@ public class UserService:IUserService
                 Token = _tokenService.CreateToken(user)
             };
         }
-        else return new TokenModel()
-        {
-            Token = ""
-        };
+        throw new CustomException("Invalid password", 401);
     }
 
     public async Task<User> GetUserByToken(string token)
@@ -86,6 +83,8 @@ public class UserService:IUserService
     public async Task Edit(UserEditDto userEdit, string token)
     {
         var user = await GetUserByToken(token);
+        var isUserUnique = await IsUniqueUser(userEdit.Email);
+        if (!isUserUnique && user.Email != userEdit.Email) throw new CustomException("There is already a user with this email", 400 );
         user.PhoneNumber = userEdit.PhoneNumber;
         user.BirthDate = userEdit.BirthDate;
         user.Gender = userEdit.Gender;

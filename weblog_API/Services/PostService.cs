@@ -102,7 +102,7 @@ public class PostService:IPostService
 
     private IQueryable<Post> FilterClosedCommunities(User user, IQueryable<Post> posts)
     {
-        return posts.Where(p => p.Community == null || !p.Community.IsClosed || user.Communities.Any(c => c.CommunityId == p.Community.Id));
+        return posts.Where(p => p.Community == null || !p.Community.IsClosed || p.Community.Subscribers.Any(c => c.UserId == user.Id));
     }
     
     private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,

@@ -121,12 +121,18 @@ public class CommunityService:ICommunityService
         var userCommunity = community.Subscribers.FirstOrDefault(uc => uc.UserId == user.Id);
         if (userCommunity == null) throw new CustomException("User is not a subscriber of this group", 403);
         var admins = community.Subscribers.Where(uc => uc.UserRole == Role.Admin).ToList();
-        if (admins.Count == 1 && userCommunity.UserRole == Role.Admin){ await DeleteCommunity(token, communityId);}
+        if (community.Subscribers.Count == 1)
+        {
+            await DeleteCommunity(token, communityId);
+        }
         else
         {
+            if (userCommunity.UserRole == Role.Admin && admins.Count == 1)
+            {
+                var randomUser = community.Subscribers.FirstOrDefault(u => u.UserRole == Role.Subscriber)!;
+                randomUser.UserRole = Role.Admin;
+            }
             community.Subscribers.Remove(userCommunity);
-            user.Communities.Remove(userCommunity);
-            _db.UserCommunities.ToList().Remove(userCommunity);
             await _db.SaveChangesAsync();
         }
     }
