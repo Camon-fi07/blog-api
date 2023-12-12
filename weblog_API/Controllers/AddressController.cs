@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using weblog_API.Models;
+using weblog_API.Dto.Address;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
@@ -15,7 +15,7 @@ public class AddressController : Controller
     }
     
     [HttpGet("search")]
-    public async Task<ActionResult<SearchAddress>> Search(long parentObjectId, string? query)
+    public async Task<ActionResult<SearchAddressDto>> Search(long parentObjectId, string? query)
     {
         try
         {
@@ -28,7 +28,7 @@ public class AddressController : Controller
         }
     }
     [HttpGet("chain")]
-    public async Task<ActionResult<SearchAddress>> Search(Guid objectGuid)
+    public async Task<ActionResult<SearchAddressDto>> Search(Guid objectGuid)
     {
         try
         {

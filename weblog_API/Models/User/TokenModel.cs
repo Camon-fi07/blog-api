@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace weblog_API.Models;
+namespace weblog_API.Models.User;
 
 public class TokenModel
 {

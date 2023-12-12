@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using weblog_API.Models;
 using weblog_API.Models.Comment;
 using weblog_API.Models.Community;
 using weblog_API.Models.Post;
-using weblog_API.Models.Tags;
+using weblog_API.Models.Tag;
 using weblog_API.Models.User;
 
 namespace weblog_API.Data;

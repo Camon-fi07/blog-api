@@ -1,4 +1,4 @@
-namespace weblog_API.Models.Tags;
+namespace weblog_API.Models.Tag;
 
 public class Tag
 {

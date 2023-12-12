@@ -3,7 +3,6 @@ using weblog_API.Data;
 using weblog_API.Dto.User;
 using weblog_API.Mappers;
 using weblog_API.Middlewares;
-using weblog_API.Models;
 using weblog_API.Models.Community;
 using weblog_API.Models.Post;
 using weblog_API.Models.User;
@@ -27,7 +26,7 @@ public class UserService:IUserService
         return user == null;
     }
     
-    public async Task<TokenModel> Registration(UserRegister registrationRequest)
+    public async Task<TokenModel> Registration(UserRegisterDto registrationRequest)
     {
         var isUserUnique = await IsUniqueUser(registrationRequest.Email);
         if (!isUserUnique) throw new CustomException("There is already a user with this email", 400 );
@@ -84,7 +83,7 @@ public class UserService:IUserService
         return UserMapper.UserToUserDto(user);
     }
 
-    public async Task Edit(UserEdit userEdit, string token)
+    public async Task Edit(UserEditDto userEdit, string token)
     {
         var user = await GetUserByToken(token);
         user.PhoneNumber = userEdit.PhoneNumber;

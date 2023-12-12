@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using weblog_API.Models.Tags;
 
 namespace weblog_API.Models.Post;
 
@@ -13,7 +12,7 @@ public class Post
     public int ReadingTime { get; set; }
     public string? Image { get; set; }
     public List<User.User> UsersLiked { get; set; }
-    public List<Tag> Tags { get; set; }
+    public List<Tag.Tag> Tags { get; set; }
     public User.User Author { get; set; }
     public Community.Community? Community { get; set; }
     public List<Comment.Comment> Comments { get; set; }

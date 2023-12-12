@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using weblog_API.Dto.Address;
 using weblog_API.Enums;
 using weblog_API.Middlewares;
 using weblog_API.Models;
@@ -15,7 +16,7 @@ public class AddressService:IAddressService
         _db = db;
     }
     
-    private async Task<SearchAddress?> GetAddressById(long? id)
+    private async Task<SearchAddressDto?> GetAddressById(long? id)
     {
         AsAddrObj? addressObj;
         addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
@@ -27,7 +28,7 @@ public class AddressService:IAddressService
             var text = $"{addressHouse.Housenum}";
             if (addressHouse.Addnum1 != null) text += $" {AddressType.GetHouseType(addressHouse.Addtype1)} {addressHouse.Addnum1}";
             if (addressHouse.Addnum2 != null) text += $" {AddressType.GetHouseType(addressHouse.Addtype1)} {addressHouse.Addnum2}";
-            return new SearchAddress()
+            return new SearchAddressDto()
             {
                 Objectguid = addressHouse.Objectguid,
                 Objectid = addressHouse.Objectid,
@@ -36,7 +37,7 @@ public class AddressService:IAddressService
                 ObjectLevelText = AddressType.GetHouseType(addressHouse.Housetype)
             };
         }
-        return new SearchAddress()
+        return new SearchAddressDto()
         {
             Objectguid = addressObj.Objectguid,
             Objectid = addressObj.Objectid,
@@ -65,10 +66,10 @@ public class AddressService:IAddressService
         return id;
     }
     
-    public async Task<List<SearchAddress>> Search(long parentObjectId, string? query)
+    public async Task<List<SearchAddressDto>> Search(long parentObjectId, string? query)
     {
         var addressesHierarchies = _db.AsAdmHierarchies.Where(a => a.Parentobjid == parentObjectId).ToList();
-        List<SearchAddress> resultAddresses = new List<SearchAddress>();
+        List<SearchAddressDto> resultAddresses = new List<SearchAddressDto>();
         foreach (var address in addressesHierarchies)
         {
             var searchAddress = await GetAddressById(address.Objectid);
@@ -80,11 +81,11 @@ public class AddressService:IAddressService
         return resultAddresses;
     }
 
-    public async Task<List<SearchAddress>> AddressChain(Guid objectGuid)
+    public async Task<List<SearchAddressDto>> AddressChain(Guid objectGuid)
     {
         var objectId = await GetIdByGuid(objectGuid);
         var ids = (await _db.AsAdmHierarchies.FirstOrDefaultAsync(a => a.Objectid == objectId))?.Path!.Split(".");
-        List<SearchAddress> path = new List<SearchAddress>();
+        List<SearchAddressDto> path = new List<SearchAddressDto>();
         foreach (var id in ids)
         {   
             path.Add(await GetAddressById(long.Parse(id)));

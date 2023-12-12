@@ -1,6 +1,6 @@
-namespace weblog_API.Models;
+namespace weblog_API.Dto.Address;
 
-public class SearchAddress
+public class SearchAddressDto
 {
     public long Objectid { get; set; }
 

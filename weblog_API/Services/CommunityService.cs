@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
-using weblog_API.Data.Dto;
 using weblog_API.Dto.Community;
 using weblog_API.Dto.User;
 using weblog_API.Enums;

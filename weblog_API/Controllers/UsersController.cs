@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using weblog_API.Dto.User;
-using weblog_API.Models;
 using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
@@ -17,7 +16,7 @@ public class UsersController : Controller
     }
     
     [HttpPost("register")]
-    public async Task<ActionResult<TokenModel>> Register([FromBody] UserRegister userRegister)
+    public async Task<ActionResult<TokenModel>> Register([FromBody] UserRegisterDto userRegister)
     {
         var token = await _userService.Registration(userRegister);
         return Ok(token);
@@ -42,7 +41,7 @@ public class UsersController : Controller
 
     [HttpPut("profile")]
     [Authorize]
-    public async Task<IActionResult> EditProfile([FromBody] UserEdit userEdit)
+    public async Task<IActionResult> EditProfile([FromBody] UserEditDto userEdit)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         await _userService.Edit(userEdit, token);

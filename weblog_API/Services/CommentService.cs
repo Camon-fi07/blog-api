@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using weblog_API.Data;
-using weblog_API.Data.Dto;
 using weblog_API.Dto.Comment;
 using weblog_API.Mappers;
 using weblog_API.Middlewares;

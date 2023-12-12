@@ -1,6 +1,5 @@
-using weblog_API.Data.Dto;
 using weblog_API.Dto;
-using weblog_API.Models.Tags;
+using weblog_API.Models.Tag;
 
 namespace weblog_API.Mappers;
 
