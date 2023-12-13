@@ -53,7 +53,7 @@ public class CommunityController : Controller
     
     [HttpGet("{id:guid}/post")]
     public async Task<ActionResult<PostPagedListDto>> GetPosts(Guid id,[FromQuery] List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
-        int page, int size)
+        int page=1, int size=5)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         var posts = await _postService.GetCommunityPosts(id, tags,  author,  minReadingTime,  maxReadingTime,  sorting,

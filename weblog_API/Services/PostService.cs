@@ -59,6 +59,7 @@ public class PostService:IPostService
     
     public async Task<Guid> CreatePost(CreatePostDto createPostDto, string token, Guid? communityId)
     {
+        if (createPostDto.Tags.Count == 0) throw new CustomException("Specify at least one tag for a new post",400);
         var posts = _db.Posts;
         var user = await _userService.GetUserByToken(token);
         _tagsService.CheckTags(createPostDto.Tags);
@@ -103,9 +104,9 @@ public class PostService:IPostService
         await _db.SaveChangesAsync();
     }
 
-    private IQueryable<Post> FilterClosedCommunities(User user, IQueryable<Post> posts)
+    private IQueryable<Post> FilterClosedCommunities(List<Guid> userCommunities, IQueryable<Post> posts)
     {
-        return posts.Where(p => p.Community == null || !p.Community.IsClosed || p.Community.Subscribers.Any(c => c.UserId == user.Id));
+        return posts.Where(p => p.Community == null || !p.Community.IsClosed || userCommunities.Contains(p.Community.Id));
     }
     
     private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,
@@ -118,12 +119,15 @@ public class PostService:IPostService
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
         filterPosts = SortPosts(sorting, filterPosts);
         return filterPosts;
-        // return filterPosts.Skip((page - 1) * size).Take(size);
     }
     
     public async Task<PostPagedListDto> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token)
     {
+        if (minReadingTime != null && maxReadingTime != null && maxReadingTime < minReadingTime)
+            throw new CustomException("Max reading time couldn't be less than min reading time", 400);
+        _tagsService.CheckTags(tags);
+        
         var posts = GetAllPosts();
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
@@ -144,14 +148,19 @@ public class PostService:IPostService
     public async Task<PostPagedListDto> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token, bool onlyMyCommunities)
     {
+        if (minReadingTime != null && maxReadingTime != null && maxReadingTime < minReadingTime)
+            throw new CustomException("Max reading time couldn't be less than min reading time", 400);
+        _tagsService.CheckTags(tags);
+        
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var posts = GetAllPosts();
-
+        
         if (user != null)
         {
-            posts = FilterClosedCommunities(user, posts);
-            if(onlyMyCommunities) posts = posts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
+            var userCommunities = user.Communities.Select(u => u.CommunityId).ToList();
+            posts = FilterClosedCommunities(userCommunities, posts);
+            if(onlyMyCommunities) posts = posts.Where(p => p.Community != null && userCommunities.Contains(p.Community.Id));
         }
         posts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting, page, size);
         int count = posts.Count() / (page * size) == 0 ? 1 : posts.Count() / (page * size);
@@ -171,6 +180,9 @@ public class PostService:IPostService
         
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
+        if (post.Community != null && post.Community.IsClosed &&
+            (user == null || user.Communities.All(uc => uc.CommunityId != post.Community.Id)))
+            throw new CustomException("You don't have rights", 403);
         
         return PostMapper.PostToPostFullDto(post, user, tags, comments);
     }
