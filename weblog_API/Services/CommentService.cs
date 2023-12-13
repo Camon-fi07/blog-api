@@ -94,6 +94,17 @@ public class CommentService:ICommentService
         await _db.SaveChangesAsync();
     }
 
+    private async Task DeleteParentComment(Guid commentId)
+    {
+        var comment = await _db.Comments.Include(c => c.ParentComment).FirstOrDefaultAsync(c => c.Id==commentId);
+        if (comment!.ParentComment != null && IsCommentDeleted(comment.ParentComment))
+        {
+            var parentId = comment.ParentComment.Id;
+            await DeleteParentComment(parentId);
+            _db.Comments.Remove(comment.ParentComment);
+        }
+    }
+
     public async Task DeleteComment(Guid commentId, string token)
     {
         var comment = await _db.Comments.Include(c => c.Author).Include(c => c.SubComments).FirstOrDefaultAsync(c => c.Id == commentId);
@@ -106,10 +117,15 @@ public class CommentService:ICommentService
         
         if (comment.SubComments.Count > 0)
         {
-            comment.Content = "Комментарий удалён";
+            comment.Content = string.Empty;
+            comment.ModifiedDate = DateTime.UtcNow;
             comment.DeleteDate = DateTime.UtcNow;
         }
-        else _db.Comments.Remove(comment);
+        else
+        {
+            await DeleteParentComment(comment.Id);
+            _db.Comments.Remove(comment);
+        }
         await _db.SaveChangesAsync();
     }
 }
