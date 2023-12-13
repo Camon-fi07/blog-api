@@ -44,11 +44,11 @@ public class CommunityController : Controller
     
     [HttpPost("{id:guid}/post")]
     [Authorize]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto, Guid id)
+    public async Task<ActionResult<Guid>> CreatePost([FromBody] CreatePostDto createPostDto, Guid id)
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        await _postService.CreatePost(createPostDto, token, id);
-        return Ok();
+        var postId = await _postService.CreatePost(createPostDto, token, id);
+        return Ok(postId);
     }
     
     [HttpGet("{id:guid}/post")]

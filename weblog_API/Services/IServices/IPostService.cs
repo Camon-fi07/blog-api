@@ -9,7 +9,7 @@ public interface IPostService
     public Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
          int page, int size, string? token, bool onlyMyCommunities);
 
-    public Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId);
+    public Task<Guid> CreatePost(CreatePostDto createPostDto, string token, Guid? communityId);
 
     public Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime,
         int? maxReadingTime, PostSorting sorting,

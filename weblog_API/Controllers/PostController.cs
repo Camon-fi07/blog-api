@@ -18,11 +18,11 @@ public class PostController : Controller
     
     [HttpPost("create")]
     [Authorize]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
+    public async Task<ActionResult<Guid>> CreatePost([FromBody] CreatePostDto createPostDto)
     {
         string token = HttpContext.Request.Headers["Authorization"];
-        await _postService.CreatePost(createPostDto, token, null);
-        return Ok();
+        var postId = await _postService.CreatePost(createPostDto, token, null);
+        return Ok(postId);
     }    
     
     [HttpDelete("delete")]

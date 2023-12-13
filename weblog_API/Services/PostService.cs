@@ -57,7 +57,7 @@ public class PostService:IPostService
         }
     }    
     
-    public async Task CreatePost(CreatePostDto createPostDto, string token, Guid? communityId)
+    public async Task<Guid> CreatePost(CreatePostDto createPostDto, string token, Guid? communityId)
     {
         var posts = _db.Posts;
         var user = await _userService.GetUserByToken(token);
@@ -87,6 +87,7 @@ public class PostService:IPostService
         };
         posts.Add(post);
         await _db.SaveChangesAsync();
+        return post.Id;
     }
 
     public async Task DeletePost(Guid id, string token)
