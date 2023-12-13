@@ -43,8 +43,8 @@ public class PostController : Controller
     }    
     
     [HttpGet("")]
-    public async Task<ActionResult<List<PostDto>>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
-        int page, int size, bool onlyMyCommunities=false)
+    public async Task<ActionResult<PostPagedListDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+        int page=1, int size=5, bool onlyMyCommunities=false)
     {
         string token = HttpContext.Request.Headers["Authorization"];
         var posts = await _postService.GetPosts(tags,  author,  minReadingTime,  maxReadingTime,  sorting,

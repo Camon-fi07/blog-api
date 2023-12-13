@@ -36,6 +36,21 @@ public static class PostMapper
         };
         return postDto;
     }
+    public static PostPagedListDto PostsToPostPagedListDto(List<Post> posts, User? user, int page, int count, int size)
+    {
+        var postsDto = posts.Select(p => PostToPostDto(p, user));
+        var postPagedList = new PostPagedListDto()
+        {
+            Posts = postsDto.ToList(),
+            Pagination = new PageInfoDto()
+            {
+                Current = page,
+                Count = count,
+                Size = size
+            }
+        };
+        return postPagedList;
+    }
     public static PostFullDto PostToPostFullDto(Post post, User? user, List<TagDto> tags, List<CommentDto> comments)
     {
         var postDto = new PostFullDto()

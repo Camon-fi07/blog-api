@@ -52,7 +52,7 @@ public class CommunityController : Controller
     }
     
     [HttpGet("{id:guid}/post")]
-    public async Task<ActionResult<List<PostDto>>> GetPosts(Guid id,[FromQuery] List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+    public async Task<ActionResult<PostPagedListDto>> GetPosts(Guid id,[FromQuery] List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size)
     {
         string token = HttpContext.Request.Headers["Authorization"];

@@ -117,10 +117,11 @@ public class PostService:IPostService
         if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
         filterPosts = SortPosts(sorting, filterPosts);
-        return filterPosts.Skip((page - 1) * size).Take(size);
+        return filterPosts;
+        // return filterPosts.Skip((page - 1) * size).Take(size);
     }
     
-    public async Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+    public async Task<PostPagedListDto> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token)
     {
         var posts = GetAllPosts();
@@ -135,11 +136,12 @@ public class PostService:IPostService
         
         communityPosts = FilterPosts(communityPosts, tags,  author,  minReadingTime,  maxReadingTime,  sorting,
              page, size);
-        
-        return communityPosts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
+        var pagedPosts = communityPosts.Skip((page - 1) * size).Take(size).ToList();
+        int count = communityPosts.Count() / (page * size) == 0 ? 1 : communityPosts.Count() / (page * size);
+        return PostMapper.PostsToPostPagedListDto(pagedPosts, user, page,count, size);
     }
     
-    public async Task<List<PostDto>> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
+    public async Task<PostPagedListDto> GetPosts(List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
         int page, int size, string? token, bool onlyMyCommunities)
     {
         User? user = null;
@@ -151,9 +153,10 @@ public class PostService:IPostService
             posts = FilterClosedCommunities(user, posts);
             if(onlyMyCommunities) posts = posts.Where(p => p.Community== null || user.Communities.Any(c => c.CommunityId == p.Community.Id));
         }
-        posts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting, page, size); 
-        
-        return posts.Select(p => PostMapper.PostToPostDto(p, user)).ToList();
+        posts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting, page, size);
+        int count = posts.Count() / (page * size) == 0 ? 1 : posts.Count() / (page * size);
+        var pagedPosts = posts.Skip((page - 1) * size).Take(size).ToList();
+        return PostMapper.PostsToPostPagedListDto(pagedPosts, user, page,count, size);
     }
 
     public async Task<PostFullDto> GetConcretePost(Guid id, string? token)
