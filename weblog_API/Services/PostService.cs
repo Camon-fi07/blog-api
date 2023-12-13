@@ -19,13 +19,15 @@ public class PostService:IPostService
     private readonly ICommunityService _communityService;
     private readonly IUserService _userService;
     private readonly IAddressService _addressService;
-    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService, IUserService userService, IAddressService addressService)
+    private readonly ITagsService _tagsService;
+    public PostService(AppDbContext db, ITokenService tokenService, ICommunityService communityService, IUserService userService, IAddressService addressService, ITagsService tagsService)
     {
         _db = db;
         _tokenService = tokenService;
         _communityService = communityService;
         _userService = userService;
         _addressService = addressService;
+        _tagsService = tagsService;
     }
 
     private  IQueryable<Post> GetAllPosts()
@@ -59,6 +61,7 @@ public class PostService:IPostService
     {
         var posts = _db.Posts;
         var user = await _userService.GetUserByToken(token);
+        _tagsService.CheckTags(createPostDto.Tags);
         var tags = _db.Tags.Where(t => createPostDto.Tags.Any(tp => tp == t.Id)).ToList();
         var community = communityId == null ? null : await _communityService.GetCommunityById((Guid)communityId);
         if (community != null && community.Subscribers.All(uc => uc.UserId != user.Id || uc.UserRole!=Role.Admin))
@@ -83,7 +86,6 @@ public class PostService:IPostService
             Community = community
         };
         posts.Add(post);
-        _db.Entry(post).State = EntityState.Added;
         await _db.SaveChangesAsync();
     }
 
@@ -113,8 +115,8 @@ public class PostService:IPostService
         if(author != null) filterPosts = filterPosts.Where(p => p.Author.FullName.Contains(author));
         if(minReadingTime != null) filterPosts = filterPosts.Where(p => minReadingTime <= p.ReadingTime);
         if(maxReadingTime != null) filterPosts = filterPosts.Where(p => p.ReadingTime <= maxReadingTime);
-        filterPosts = filterPosts.Skip((page - 1) * size).Take(size);
-        return SortPosts(sorting, filterPosts);
+        filterPosts = SortPosts(sorting, filterPosts);
+        return filterPosts.Skip((page - 1) * size).Take(size);
     }
     
     public async Task<List<PostDto>> GetCommunityPosts(Guid communityId, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime, PostSorting sorting,
