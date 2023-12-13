@@ -109,6 +109,13 @@ public class PostService:IPostService
         return posts.Where(p => p.Community == null || !p.Community.IsClosed || userCommunities.Contains(p.Community.Id));
     }
     
+    private void CheckClosedCommunity(Post post, User? user)
+    {
+        if (post.Community != null && post.Community.IsClosed &&
+            (user == null || user.Communities.All(uc => uc.CommunityId != post.Community.Id)))
+            throw new CustomException("You don't have rights", 403);
+    }
+    
     private  IQueryable<Post> FilterPosts(IQueryable<Post> posts, List<Guid> tags, string? author, int? minReadingTime, int? maxReadingTime,
         PostSorting sorting, int page, int size)
     {
@@ -180,9 +187,7 @@ public class PostService:IPostService
         
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
-        if (post.Community != null && post.Community.IsClosed &&
-            (user == null || user.Communities.All(uc => uc.CommunityId != post.Community.Id)))
-            throw new CustomException("You don't have rights", 403);
+        CheckClosedCommunity(post, user);
         
         return PostMapper.PostToPostFullDto(post, user, tags, comments);
     }
@@ -192,6 +197,7 @@ public class PostService:IPostService
         var post = await _db.Posts.Include(p => p.UsersLiked).Include(p => p.Community).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         var user = await _userService.GetUserByToken(token);
+        CheckClosedCommunity(post, user);
         if (post.UsersLiked.Any(u => u.Id == user.Id)) throw new CustomException("User has already liked this post", 400);
         if(post.Community != null && post.Community.IsClosed && user.Communities.All(c => c.UserId!=user.Id)) 
             throw new CustomException("User can't add like to this post", 403);
@@ -204,6 +210,7 @@ public class PostService:IPostService
         var post = await _db.Posts.Include(p => p.UsersLiked).FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) throw new CustomException("There is not a post with this Id", 400);
         var user = await _userService.GetUserByToken(token);
+        CheckClosedCommunity(post, user);
         if (post.UsersLiked.All(u => u.Id != user.Id)) throw new CustomException("User don't like this post", 400);
         post.UsersLiked.Remove(user);
         await _db.SaveChangesAsync();
