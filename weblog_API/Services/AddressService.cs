@@ -18,12 +18,10 @@ public class AddressService:IAddressService
     
     private async Task<SearchAddressDto?> GetAddressById(long? id)
     {
-        AsAddrObj? addressObj;
-        addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
+        var addressObj = await _db.AsAddrObjs.FirstOrDefaultAsync(a => a.Objectid == id);
         if (addressObj == null)
         {
-            AsHouse? addressHouse;
-            addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
+            var addressHouse = await _db.AsHouses.FirstOrDefaultAsync(a => a.Objectid == id);
             if (addressHouse == null) return null;
             var text = $"{addressHouse.Housenum}";
             if (addressHouse.Addnum1 != null) text += $" {AddressType.GetHouseType(addressHouse.Addtype1)} {addressHouse.Addnum1}";
