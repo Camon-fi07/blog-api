@@ -19,14 +19,16 @@ public class CommentController : Controller
    [HttpGet("{postId:guid}")]
    public async Task<ActionResult<List<CommentDto>>> GetPostComments(Guid postId)
    {
-      var comments = await _commentService.GetPostComments(postId);
+      string token = HttpContext.Request.Headers["Authorization"];
+      var comments = await _commentService.GetPostComments(postId, token);
       return Ok(comments);
    }
    
    [HttpGet("{commentId:guid}/tree")]
    public async Task<ActionResult<List<CommentDto>>> GetNestedComments(Guid commentId)
    {
-      var comments = await _commentService.GetAllNestedComments(commentId);
+      string token = HttpContext.Request.Headers["Authorization"];
+      var comments = await _commentService.GetAllNestedComments(commentId, token);
       return Ok(comments);
    }
    

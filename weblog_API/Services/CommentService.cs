@@ -4,6 +4,7 @@ using weblog_API.Dto.Comment;
 using weblog_API.Mappers;
 using weblog_API.Middlewares;
 using weblog_API.Models.Comment;
+using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Services;
@@ -12,11 +13,15 @@ public class CommentService:ICommentService
 {
     private readonly AppDbContext _db;
     private readonly IUserService _userService;
+    private readonly IPostService _postService;
+    private readonly ITokenService _tokenService;
 
-    public CommentService(AppDbContext db, IUserService userService)
+    public CommentService(AppDbContext db, IUserService userService, IPostService postService, ITokenService tokenService)
     {
         _db = db;
         _userService = userService;
+        _postService = postService;
+        _tokenService = tokenService;
     }
 
     private bool IsCommentDeleted(Comment comment)
@@ -24,20 +29,31 @@ public class CommentService:ICommentService
         return comment.DeleteDate != null;
     }
     
-    public async Task<List<CommentDto>> GetPostComments(Guid postId)
+    public async Task<List<CommentDto>> GetPostComments(Guid postId, string? token)
     {
         var post = await _db.Posts
+            .Include(p => p.Community)
             .Include(p => p.Comments).ThenInclude(c => c.SubComments)
             .Include(p => p.Comments).ThenInclude(c => c.Author)
             .FirstOrDefaultAsync(p => p.Id == postId);
         if (post == null) throw new CustomException("Can't find this post", 400);
+        
+        User? user = null;
+        if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
+        _postService.CheckClosedCommunity(post, user);
+        
         var comments = post.Comments.Where(c => c.ParentComment == null).Select(c => CommentMapper.CommentToCommentDto(c));
         return comments.ToList();
     }
 
-    public async Task<List<CommentDto>> GetAllNestedComments(Guid commentId)
+    public async Task<List<CommentDto>> GetAllNestedComments(Guid commentId, string? token)
     {
-        if(!_db.Comments.Any(c => c.Id == commentId)) throw new CustomException("Can't find this comment", 400);
+        var rootComment = await _db.Comments.Include(comment => comment.Post).ThenInclude(p => p.Community).FirstOrDefaultAsync(c => c.Id == commentId);
+        if(rootComment == null) throw new CustomException("Can't find this comment", 400);
+        
+        User? user = null;
+        if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
+        _postService.CheckClosedCommunity(rootComment.Post, user);
         
         var comments = _db.Comments.Include(c => c.Author)
             .Include(c => c.Post)
@@ -45,7 +61,7 @@ public class CommentService:ICommentService
             .Include(c => c.ParentComment)
             .Where(c => c.ParentComment.Id == commentId)
             .Select(c => CommentMapper.CommentToCommentDto(c));
-        
+       
         return await comments.ToListAsync();
     }
 

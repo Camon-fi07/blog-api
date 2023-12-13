@@ -104,12 +104,13 @@ public class PostService:IPostService
         await _db.SaveChangesAsync();
     }
 
-    private IQueryable<Post> FilterClosedCommunities(List<Guid> userCommunities, IQueryable<Post> posts)
+    private IQueryable<Post> FilterClosedCommunities(User? user, IQueryable<Post> posts)
     {
-        return posts.Where(p => p.Community == null || !p.Community.IsClosed || userCommunities.Contains(p.Community.Id));
+        var communities = user == null ? new List<Guid>() : user.Communities.Select(uc => uc.CommunityId);
+        return posts.Where(p => p.Community == null || !p.Community.IsClosed ||communities.Contains(p.Community.Id));
     }
     
-    private void CheckClosedCommunity(Post post, User? user)
+    public void CheckClosedCommunity(Post post, User? user)
     {
         if (post.Community != null && post.Community.IsClosed &&
             (user == null || user.Communities.All(uc => uc.CommunityId != post.Community.Id)))
@@ -132,7 +133,7 @@ public class PostService:IPostService
         int page, int size, string? token)
     {
         if (minReadingTime != null && maxReadingTime != null && maxReadingTime < minReadingTime)
-            throw new CustomException("Max reading time couldn't be less than min reading time", 400);
+            throw new CustomException("Max reading time can't be less than min reading time", 400);
         _tagsService.CheckTags(tags);
         
         var posts = GetAllPosts();
@@ -156,19 +157,21 @@ public class PostService:IPostService
         int page, int size, string? token, bool onlyMyCommunities)
     {
         if (minReadingTime != null && maxReadingTime != null && maxReadingTime < minReadingTime)
-            throw new CustomException("Max reading time couldn't be less than min reading time", 400);
+            throw new CustomException("Max reading time can't be less than min reading time", 400);
         _tagsService.CheckTags(tags);
         
         User? user = null;
         if(_tokenService.ValidateToken(token)) user = await _userService.GetUserByToken(token);
         var posts = GetAllPosts();
         
+        posts = FilterClosedCommunities(user, posts);
+        
         if (user != null)
         {
             var userCommunities = user.Communities.Select(u => u.CommunityId).ToList();
-            posts = FilterClosedCommunities(userCommunities, posts);
             if(onlyMyCommunities) posts = posts.Where(p => p.Community != null && userCommunities.Contains(p.Community.Id));
         }
+        
         posts = FilterPosts(posts,tags,  author,  minReadingTime,  maxReadingTime,  sorting, page, size);
         int count = posts.Count() / (page * size) == 0 ? 1 : posts.Count() / (page * size);
         var pagedPosts = posts.Skip((page - 1) * size).Take(size).ToList();

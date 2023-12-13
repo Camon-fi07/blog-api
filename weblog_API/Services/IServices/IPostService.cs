@@ -1,6 +1,8 @@
 using weblog_API.Data.Dto;
 using weblog_API.Dto.Post;
 using weblog_API.Enums;
+using weblog_API.Models.Post;
+using weblog_API.Models.User;
 
 namespace weblog_API.Services.IServices;
 
@@ -16,6 +18,8 @@ public interface IPostService
         int page, int size, string? token);
 
     public Task DeletePost(Guid id, string token);
+
+    public void CheckClosedCommunity(Post post, User? user);
 
     public Task<PostFullDto> GetConcretePost(Guid id, string? token);
 
