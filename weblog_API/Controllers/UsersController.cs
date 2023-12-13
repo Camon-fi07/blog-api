@@ -5,7 +5,7 @@ using weblog_API.Models.User;
 using weblog_API.Services.IServices;
 
 namespace weblog_API.Controllers;
-[Route("api/Users")]
+[Route("api/[controller]")]
 [ApiController]
 public class UsersController : Controller
 {
