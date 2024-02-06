@@ -14,7 +14,8 @@ public static class UserMapper
             FullName = user.FullName,
             Id = user.Id,
             CreateTime = user.CreateTime,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            BirthDate = user.BirthDate
         };
         return userDto;
     } 
